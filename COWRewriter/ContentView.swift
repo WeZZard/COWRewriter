@@ -10,113 +10,87 @@ import SwiftUI
 struct ContentView: View {
   
   @State
-  var chosenURL: URL? = nil
+  private var selectedFileURL: URL?
+  
+  @State
+  private var context: RewriteContext?
   
   @State
   var decls: [Decl] = []
   
   @State
-  var fileContent: String = ""
-  
-  @State
-  var selectedDecls: Set<UUID> = []
-  
-  @State
-  var showFileChooser = false
-  
-  var chosenFilename: String {
-    chosenURL?.lastPathComponent ?? "No file chosen."
-  }
+  private var selectedDecls: Set<Decl> = []
   
   var body: some View {
     VStack(spacing: 16) {
-      selectFile
-      declPicker
-      saveFile
+      if selectedFileURL == nil {
+        noUrlView
+          .transition(.opacity)
+      } else {
+        hasUrlView
+          .transition(.opacity)
+      }
     }
+    .onChange(of: selectedFileURL, perform: onSelectedFileUrlChange)
     .padding()
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .onDrop(
+      of: [.fileURL],
+      isTargeted: nil,
+      perform: FilePicker.onDrop(url: $selectedFileURL.animation(.spring()))
+    )
   }
   
-  var selectFile: some View {
-    HStack(spacing: 16) {
-      Text(chosenFilename)
+  @ViewBuilder
+  private var hasUrlView: some View {
+    FilePicker(url: $selectedFileURL)
+    DeclPicker(
+      fileURL: $selectedFileURL,
+      rewriteContext: $context,
+      decls: $decls,
+      selectedDecls: $selectedDecls
+    )
+    BottomToolbar(
+      decls: $decls,
+      selectedDecls: $selectedDecls,
+      rewriteContext: context
+    )
+  }
+  
+  private func onSelectedFileUrlChange(_ url: URL?) {
+    let context = url.map(RewriteContext.init)
+    self.context = context
+  }
+  
+  @ViewBuilder
+  private var noUrlView: some View {
+    VStack {
       Spacer()
-      Button("Select File", action: onTapSelectFile)
-    }
-  }
-  
-  var declPicker: some View {
-    HSplitView {
       VStack {
-        Table(decls, selection: $selectedDecls) {
-          TableColumn("Rewriteable Types", value: \.name)
-        }
-        HStack {
-          Button("Select All") {
-            selectedDecls = Set(decls.map({$0.id}))
-          }.disabled(selectedDecls.count == decls.count)
-          Button("Deselect All") {
-            selectedDecls.removeAll()
-          }.disabled(selectedDecls.isEmpty)
-          Spacer()
-        }
+        Button("Open", action: onTapOpen)
+          .padding(.bottom, 8)
+        Text("Open a file or drag & drop it here.")
+          .lineLimit(1)
+          .fixedSize(horizontal: true, vertical: true)
       }
-      .frame(minWidth: 200)
-      .padding()
-      VStack {
-        HStack {
-          Text("File Content:")
-          Spacer()
-        }
-        TextEditor(text: .constant(fileContent))
-      }
-      .frame(minWidth: 200)
-      .padding()
+      .padding(32)
+      Spacer()
     }
   }
   
-  var saveFile: some View {
-    Button("Save As...", action: onTapSaveAs)
-      .disabled(selectedDecls.isEmpty)
-  }
-  
-  func onTapSelectFile() {
-    let panel = NSOpenPanel()
-    panel.allowsMultipleSelection = false
-    panel.canChooseDirectories = false
-    if panel.runModal() == .OK {
-      self.chosenURL = panel.url
+  private func onTapOpen() {
+    if let url = FilePicker.open() {
+      withAnimation(.spring()) {
+        self.selectedFileURL = url
+      }
     }
   }
-  
-  func onTapSaveAs() {
-    
-  }
-  
-}
-
-struct Decl: Hashable, Identifiable {
-  
-  let name: String
-  
-  let id: UUID = UUID()
   
 }
 
 struct ContentView_Previews: PreviewProvider {
   
-  static var previewDecls: [Decl] {
-    [
-      Decl(name: "Foo"),
-      Decl(name: "Bar"),
-      Decl(name: "Fee"),
-      Decl(name: "Foe"),
-      Decl(name: "Fum"),
-    ]
-  }
-  
   static var previews: some View {
-    ContentView(decls:  previewDecls)
+    ContentView()
   }
 }
