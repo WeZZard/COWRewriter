@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9C0809C92838BA2F00ACDCE9 /* COWRewriterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809C82838BA2F00ACDCE9 /* COWRewriterApp.swift */; };
+		9C0809C92838BA2F00ACDCE9 /* TheApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809C82838BA2F00ACDCE9 /* TheApp.swift */; };
 		9C0809CB2838BA2F00ACDCE9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809CA2838BA2F00ACDCE9 /* ContentView.swift */; };
 		9C0809CD2838BA3000ACDCE9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C0809CC2838BA3000ACDCE9 /* Assets.xcassets */; };
 		9C0809D02838BA3000ACDCE9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C0809CF2838BA3000ACDCE9 /* Preview Assets.xcassets */; };
@@ -35,7 +35,7 @@
 
 /* Begin PBXFileReference section */
 		9C0809C52838BA2F00ACDCE9 /* COWRewriter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = COWRewriter.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9C0809C82838BA2F00ACDCE9 /* COWRewriterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterApp.swift; sourceTree = "<group>"; };
+		9C0809C82838BA2F00ACDCE9 /* TheApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheApp.swift; sourceTree = "<group>"; };
 		9C0809CA2838BA2F00ACDCE9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9C0809CC2838BA3000ACDCE9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9C0809CF2838BA3000ACDCE9 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -95,7 +95,7 @@
 		9C0809C72838BA2F00ACDCE9 /* COWRewriter */ = {
 			isa = PBXGroup;
 			children = (
-				9C0809C82838BA2F00ACDCE9 /* COWRewriterApp.swift */,
+				9C0809C82838BA2F00ACDCE9 /* TheApp.swift */,
 				9C0809CA2838BA2F00ACDCE9 /* ContentView.swift */,
 				9C0809CC2838BA3000ACDCE9 /* Assets.xcassets */,
 				9C0809D12838BA3000ACDCE9 /* COWRewriter.entitlements */,
@@ -260,7 +260,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9C0809CB2838BA2F00ACDCE9 /* ContentView.swift in Sources */,
-				9C0809C92838BA2F00ACDCE9 /* COWRewriterApp.swift in Sources */,
+				9C0809C92838BA2F00ACDCE9 /* TheApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
