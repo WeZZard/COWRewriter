@@ -174,8 +174,16 @@ private struct ConditionalKeyboardShorcut: ViewModifier {
   let keyboardShortcut: KeyboardShortcut
   
   func body(content: Content) -> some View {
-    content
-      .keyboardShortcut(isAvailable ? keyboardShortcut : nil)
+    if isAvailable {
+      content
+        .keyboardShortcut(
+          keyboardShortcut.key,
+          modifiers: keyboardShortcut.modifiers,
+          localization: keyboardShortcut.localization
+        )
+    } else {
+      content
+    }
   }
   
 }
