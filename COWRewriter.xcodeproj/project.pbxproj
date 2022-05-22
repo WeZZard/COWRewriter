@@ -11,7 +11,6 @@
 		9C0809CB2838BA2F00ACDCE9 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809CA2838BA2F00ACDCE9 /* ContentView.swift */; };
 		9C0809CD2838BA3000ACDCE9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C0809CC2838BA3000ACDCE9 /* Assets.xcassets */; };
 		9C0809D02838BA3000ACDCE9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C0809CF2838BA3000ACDCE9 /* Preview Assets.xcassets */; };
-		9C0809DB2838BA3000ACDCE9 /* COWRewriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809DA2838BA3000ACDCE9 /* COWRewriterTests.swift */; };
 		9C0809E52838BA3000ACDCE9 /* COWRewriterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809E42838BA3000ACDCE9 /* COWRewriterUITests.swift */; };
 		9C0809E72838BA3000ACDCE9 /* COWRewriterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809E62838BA3000ACDCE9 /* COWRewriterUITestsLaunchTests.swift */; };
 		9C0809F42838C42300ACDCE9 /* RewriteContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809F32838C42300ACDCE9 /* RewriteContext.swift */; };
@@ -21,6 +20,10 @@
 		9C0809FF2838E6C400ACDCE9 /* FilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */; };
 		9C080A012838E70100ACDCE9 /* DeclPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A002838E70100ACDCE9 /* DeclPicker.swift */; };
 		9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */; };
+		9C080A0E283965E500ACDCE9 /* RewriteContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A0D283965E500ACDCE9 /* RewriteContextTests.swift */; };
+		9C080A102839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */; };
+		9C080A122839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A112839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift */; };
+		9C080A142839F0D400ACDCE9 /* RewriteContextRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A132839F0D400ACDCE9 /* RewriteContextRewriteTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +51,6 @@
 		9C0809CF2838BA3000ACDCE9 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9C0809D12838BA3000ACDCE9 /* COWRewriter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = COWRewriter.entitlements; sourceTree = "<group>"; };
 		9C0809D62838BA3000ACDCE9 /* COWRewriterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = COWRewriterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		9C0809DA2838BA3000ACDCE9 /* COWRewriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterTests.swift; sourceTree = "<group>"; };
 		9C0809E02838BA3000ACDCE9 /* COWRewriterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = COWRewriterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C0809E42838BA3000ACDCE9 /* COWRewriterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterUITests.swift; sourceTree = "<group>"; };
 		9C0809E62838BA3000ACDCE9 /* COWRewriterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterUITestsLaunchTests.swift; sourceTree = "<group>"; };
@@ -56,6 +58,10 @@
 		9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePicker.swift; sourceTree = "<group>"; };
 		9C080A002838E70100ACDCE9 /* DeclPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeclPicker.swift; sourceTree = "<group>"; };
 		9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomToolbar.swift; sourceTree = "<group>"; };
+		9C080A0D283965E500ACDCE9 /* RewriteContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteContextTests.swift; sourceTree = "<group>"; };
+		9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+COWRewriterTestsAdditions.swift"; sourceTree = "<group>"; };
+		9C080A112839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteContextWontRewriteTests.swift; sourceTree = "<group>"; };
+		9C080A132839F0D400ACDCE9 /* RewriteContextRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteContextRewriteTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,7 +139,10 @@
 		9C0809D92838BA3000ACDCE9 /* COWRewriterTests */ = {
 			isa = PBXGroup;
 			children = (
-				9C0809DA2838BA3000ACDCE9 /* COWRewriterTests.swift */,
+				9C080A0D283965E500ACDCE9 /* RewriteContextTests.swift */,
+				9C080A112839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift */,
+				9C080A132839F0D400ACDCE9 /* RewriteContextRewriteTests.swift */,
+				9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */,
 			);
 			path = COWRewriterTests;
 			sourceTree = "<group>";
@@ -298,7 +307,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9C0809DB2838BA3000ACDCE9 /* COWRewriterTests.swift in Sources */,
+				9C080A102839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift in Sources */,
+				9C080A0E283965E500ACDCE9 /* RewriteContextTests.swift in Sources */,
+				9C080A122839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift in Sources */,
+				9C080A142839F0D400ACDCE9 /* RewriteContextRewriteTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
