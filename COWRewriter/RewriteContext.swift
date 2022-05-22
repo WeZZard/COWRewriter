@@ -10,6 +10,19 @@ import SwiftSyntaxParser
 import Foundation
 import SwiftUI
 
+/**
+ 1. Create a storage class, say `Storage`.
+ 2. Copy all the stored property of the `struct` to `Storage`.
+ 3. Create a memberwrise initializer for `Storage`.
+ 4. Create a copy initializer for `Storage`.
+ 5. Create a storage stored property in `struct`, say `storage`.
+ 6. Create a storage unique-ify function, say `makeUniquelyReferencedStorage`, in `struct`.
+ 7. Rewrite all the stored properties in `struct` (except the `storage`) with dispatch call to relative properties in `storage`
+ 8. Copy all the initializers in `struct` to `Storage` (except the memberwise initializer)
+ 9. Create a memberwrise initializer for `struct` if needed.
+ 10. Rewrite all the initializers in `struct` with dispatch call to relative initializers in `Storage`
+ */
+
 internal struct RewritableDecl: Equatable, Hashable {
   
   fileprivate let contextID: ObjectIdentifier
