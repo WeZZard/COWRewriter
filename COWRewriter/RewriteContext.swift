@@ -11,15 +11,27 @@ import Foundation
 import SwiftUI
 
 /**
+ --- Create Storage Class ------------------------------------------------------
+ - Collect struct nested types -> resolve final name for the `Storage` class.
+ - Collect struct stored properties.
+  - `Storage`'s memberwise initializer shall take default value into consideration.
+ -------------------------------------------------------------------------------
  1. Create a storage class, say `Storage`.
  2. Copy all the stored property of the `struct` to `Storage`.
- 3. Create a memberwrise initializer for `Storage`.
+ 3. Create the memberwrise initializer for `Storage`.
  4. Create a copy initializer for `Storage`.
+ --- Rewrite Struct Decl -------------------------------------------------------
+ - Collect struct members
+  -> resolve final name for the `storage` variable.
+  -> resolve final name for the `makeUniquelyReferencedStorage` function.
+  -> resolve if it is necessary to create the memberwise initializer
+  -> resolve how many initializers here are needed to be copied to `Storage`
+ -------------------------------------------------------------------------------
  5. Create a storage stored property in `struct`, say `storage`.
  6. Create a storage unique-ify function, say `makeUniquelyReferencedStorage`, in `struct`.
  7. Rewrite all the stored properties in `struct` (except the `storage`) with dispatch call to relative properties in `storage`
  8. Copy all the initializers in `struct` to `Storage` (except the memberwise initializer)
- 9. Create a memberwrise initializer for `struct` if needed.
+ 9. Create the memberwrise initializer for `struct` if needed.
  10. Rewrite all the initializers in `struct` with dispatch call to relative initializers in `Storage`
  */
 
