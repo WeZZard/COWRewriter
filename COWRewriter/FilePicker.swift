@@ -51,6 +51,7 @@ struct FilePicker: View {
   
   // MARK: Drag & Drop Support
   
+  // TODO: Reuse data in memory when dropping the same url?
   static func onDrop(url: Binding<URL?>) -> ([NSItemProvider]) -> Bool {
     { (providers: [NSItemProvider]) -> Bool in
       providers.first?.loadDataRepresentation(

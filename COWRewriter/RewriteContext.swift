@@ -9,6 +9,108 @@ import SwiftSyntax
 import SwiftSyntaxParser
 import Foundation
 import SwiftUI
+import SwiftSyntaxBuilder
+
+private protocol Context: AnyObject {
+  
+  var contextID: ObjectIdentifier { get }
+  
+  var sourceLocationConverter: SourceLocationConverter { get }
+  
+}
+
+private class StructInfo {
+  
+  unowned let context: Context
+  
+  let decl: StructDeclSyntax
+  
+  var subtypes: [StructInfo]
+  
+  var identifier: String {
+    decl.identifier.text
+  }
+  
+  var startLocation: SourceLocation {
+    decl.startLocation(converter: context.sourceLocationConverter)
+  }
+  
+  var endLocation: SourceLocation {
+    decl.endLocation(converter: context.sourceLocationConverter)
+  }
+  
+  var storedPropertyMembers: [VariableDeclSyntax] {
+    if let decls = _storedPropertyMembers_ {
+      return decls
+    }
+    let decls = decl.members.members.compactMap(\.decl.asStoredPropertyDecl)
+    _storedPropertyMembers_ = decls
+    return decls
+  }
+  
+  var resolvedStorageClassName: String {
+    fatalError()
+  }
+  
+  @inline(__always)
+  init(context: Context, decl: StructDeclSyntax) {
+    self.context = context
+    self.decl = decl
+    self.subtypes = []
+  }
+  
+  private var _storedPropertyMembers_: [VariableDeclSyntax]?
+  
+}
+
+private var typeInfos: [StructInfo] = []
+
+fileprivate func createStorageClass(_ structInfo: StructInfo) -> ClassDeclSyntax {
+  func createMemberwiseInitializer() -> InitializerDeclSyntax {
+    InitializerDeclSyntax { initializer in
+      initializer.useInitKeyword(.`init`)
+      initializer.useParameters(ParameterClauseSyntax { parameters in
+        parameters.addParameter(FunctionParameterSyntax { funcParam in
+          
+        })
+      })
+      initializer.useBody(CodeBlockSyntax { codeBlock in
+        for each in structInfo.storedPropertyMembers {
+          let item = CodeBlockItemSyntax { item in
+            
+          }
+        }
+      })
+    }
+  }
+  
+  func createCopyInitializer() -> InitializerDeclSyntax {
+    InitializerDeclSyntax { initializer in
+      
+    }
+  }
+  
+  return ClassDeclSyntax { builder in
+    builder.useClassOrActorKeyword(.class)
+    builder.useIdentifier(.identifier(structInfo.resolvedStorageClassName))
+    builder.useMembers(MemberDeclBlockSyntax { memberDeclBlock in
+      // Copy stored properties in struct
+      for eachItem in structInfo.storedPropertyMembers {
+        memberDeclBlock.addMember(MemberDeclListItemSyntax { item in
+          item.useDecl(DeclSyntax(eachItem))
+        })
+      }
+      // Create memberwise initializer
+      memberDeclBlock.addMember(MemberDeclListItemSyntax { item in
+        item.useDecl(DeclSyntax(createMemberwiseInitializer()))
+      })
+      // Create copy initializer
+      memberDeclBlock.addMember(MemberDeclListItemSyntax { item in
+        item.useDecl(DeclSyntax(createCopyInitializer()))
+      })
+    })
+  }
+}
 
 /**
  --- Create Storage Class ------------------------------------------------------
@@ -165,12 +267,6 @@ private struct RewriteRequest: Equatable {
     return lhs.context === rhs.context &&
     lhs.decls == rhs.decls
   }
-  
-}
-
-private protocol Context {
-  
-  var contextID: ObjectIdentifier { get }
   
 }
 
@@ -420,6 +516,24 @@ extension VariableDeclSyntax {
       return false
     }
     return first.accessor == nil && first.initializer != nil
+  }
+  
+}
+
+
+extension DeclSyntax {
+  
+  @inline(__always)
+  fileprivate var isStoredPropertyDecl: Bool {
+    return asStoredPropertyDecl != nil
+  }
+  
+  @inline(__always)
+  fileprivate var asStoredPropertyDecl: VariableDeclSyntax? {
+    guard let decl = self.as(VariableDeclSyntax.self), decl.isStored else {
+      return nil
+    }
+    return decl
   }
   
 }
