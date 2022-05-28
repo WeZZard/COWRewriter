@@ -45,7 +45,27 @@ class SemaTests: XCTestCase {
       return self
     }
     
-    func evaluate(file: StaticString = #file, line: UInt = #line) {
+    struct EvaluationOptions: OptionSet {
+      
+      typealias RawValue = UInt8
+      
+      var rawValue: RawValue
+      
+      init(rawValue: RawValue) {
+        self.rawValue = rawValue
+      }
+      
+      static let typeCheck = EvaluationOptions(rawValue: 0x1 << 0)
+      static let refactorableDeclDetect = EvaluationOptions(rawValue: 0x1 << 1)
+      
+      static let all: EvaluationOptions = [typeCheck, refactorableDeclDetect]
+      
+    }
+    
+    func evaluateTypeCheck(
+      file: StaticString = #file,
+      line: UInt = #line
+    ) {
       do {
         let context = try Context(source: source)
         let sema = Sema(target: .of64Bit, input: context, output: context)
@@ -105,6 +125,18 @@ class SemaTests: XCTestCase {
         }
       } catch let error {
         XCTFail(error.localizedDescription)
+      }
+    }
+    
+    func evaluate(
+      _ options: EvaluationOptions = .all,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) {
+      if options.contains(.typeCheck) {
+        evaluateTypeCheck(file: file, line: line)
+      }
+      if options.contains(.refactorableDeclDetect) {
       }
     }
   }

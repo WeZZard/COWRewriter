@@ -27,7 +27,7 @@ class SemaTypeInferTests: SemaTests {
     withSource(source)
       .expect(identifier: "value1", type: "Int")
       .expect(identifier: "value2", type: "Int")
-      .evaluate()
+      .evaluate(.typeCheck)
   }
   
   func testPatternBindingWithBooleanLiteral() {
@@ -38,7 +38,7 @@ class SemaTypeInferTests: SemaTests {
     withSource(source)
       .expect(identifier: "value1", type: "Bool")
       .expect(identifier: "value2", type: "Bool")
-      .evaluate()
+      .evaluate(.typeCheck)
   }
   
   func testPatternBindingWithFloatingPointLiteral() {
@@ -49,7 +49,7 @@ class SemaTypeInferTests: SemaTests {
     withSource(source)
       .expect(identifier: "value1", type: "Double")
       .expect(identifier: "value2", type: "Double")
-      .evaluate()
+      .evaluate(.typeCheck)
   }
   
   func testPatternBindingWithStringLiteral() {
@@ -60,7 +60,7 @@ class SemaTypeInferTests: SemaTests {
     withSource(source)
       .expect(identifier: "value1", type: "String")
       .expect(identifier: "value2", type: "String")
-      .evaluate()
+      .evaluate(.typeCheck)
   }
   
   /**
@@ -148,20 +148,6 @@ class SemaTypeInferTests: SemaTests {
     let value9 = Foo.foe() // Foo
     """
     
-    withSource(source)
-      .expect(identifier: "value1", type: "Foo")
-      .expect(identifier: "value2", type: "Foo")
-      .expect(identifier: "value3", type: "Foo")
-      .expect(identifier: "value4", type: "Foo")
-      .expect(identifier: "value5", type: "Foo")
-      .expect(identifier: "value6", type: "Foo")
-      .expect(identifier: "value7", type: "Foo")
-      .expect(identifier: "value8", type: "Foo")
-      .expect(identifier: "value9", type: "Foo")
-      .ignore(identifier: "fee")
-      .ignore(identifier: "Foo.foe")
-      .ignore(identifier: "static Foo.foe")
-      .evaluate()
   }
   
   func testSemaCanRecognizeTypeFromPatternInitializerOfOpaqueResultType() {
@@ -172,9 +158,6 @@ class SemaTypeInferTests: SemaTests {
     }
     """
     
-    withSource(source)
-      .expect(identifier: "value1", type: "some Foo")
-      .evaluate()
   }
   
   func testSemaCanNotRecognizeTypeFromPatternInitializerMissingInSyntaxTree() {
@@ -182,9 +165,6 @@ class SemaTypeInferTests: SemaTests {
     let value1 = foo()
     """
     
-    withSource(source)
-      .expect(identifier: "value1", type: nil)
-      .evaluate()
   }
   
   // MARK: Type Annotations in Memberwise Initializer Can Contribute to Type Inferring
