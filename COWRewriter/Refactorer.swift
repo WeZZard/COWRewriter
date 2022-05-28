@@ -60,6 +60,8 @@ struct RefactorRequest {
 
 final class Refactorer {
   
+  private let target: Target
+  
   private let file: String?
   
   private let tree: Syntax
@@ -103,7 +105,7 @@ final class Refactorer {
       }
       
       let context = Context(refactorer: self)
-      let sema = Sema(input: context, output: context)
+      let sema = Sema(target: target, input: context, output: context)
       sema.performIfNeeded()
       _refactorableDecls_ = context.refactorableDecls
       return context.refactorableDecls
@@ -139,7 +141,8 @@ final class Refactorer {
   }
   
   @inlinable
-  init(file: String, tree: SourceFileSyntax) {
+  init(target: Target, file: String, tree: SourceFileSyntax) {
+    self.target = target
     self.file = file
     self.tree = Syntax(tree)
     self.slc = SourceLocationConverter(file: file, tree: tree)
@@ -154,24 +157,24 @@ final class Refactorer {
 extension Refactorer {
   
   @inlinable
-  convenience init?(source: String) async {
+  convenience init?(target: Target, source: String) async {
     guard let tree = try? SyntaxParser.parse(source: source) else {
       return nil
     }
-    self.init(file: "SOURCE_IN_MEMORY", tree: tree)
+    self.init(target: target, file: "SOURCE_IN_MEMORY", tree: tree)
   }
   
   @inlinable
-  convenience init?(url: URL) async {
+  convenience init?(target: Target, url: URL) async {
     guard let tree = try? SyntaxParser.parse(url) else {
       return nil
     }
-    self.init(file: url.path, tree: tree)
+    self.init(target: target, file: url.path, tree: tree)
   }
   
   @inlinable
-  convenience init?(path: String) async {
-    await self.init(url: URL(fileURLWithPath: path))
+  convenience init?(target: Target, path: String) async {
+    await self.init(target: target, url: URL(fileURLWithPath: path))
   }
   
 }

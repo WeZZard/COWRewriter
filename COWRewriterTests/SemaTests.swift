@@ -48,7 +48,7 @@ class SemaTests: XCTestCase {
     func evaluate(file: StaticString = #file, line: UInt = #line) {
       do {
         let context = try Context(source: source)
-        let sema = Sema(input: context, output: context)
+        let sema = Sema(target: .of64Bit, input: context, output: context)
         sema.performIfNeeded()
         let reader = BindingsReader(tree: sema.output.tree)
         reader.readIfNeeded()
