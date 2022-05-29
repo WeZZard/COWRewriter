@@ -8,6 +8,7 @@
 import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import SwiftUI
 
 enum Target {
   
@@ -29,7 +30,7 @@ protocol SemaInputting: AnyObject {
   
   var tree: Syntax { get }
   
-  var treeID: UUID { get }
+  var treeID: UInt { get }
   
   var slc: SourceLocationConverter { get }
   
@@ -83,6 +84,7 @@ class Sema {
     )
     let typeCheckedTree = typeChecker.check()
     let detector = RefactorableDeclsDetector(
+      treeID: input.treeID,
       tree: typeCheckedTree,
       slc: input.slc
     )
@@ -229,6 +231,157 @@ private class TypeChecker: SyntaxRewriter {
 
 private class RefactorableDeclsDetector: SyntaxVisitor {
   
+  class Scope {
+    
+    var subscopes: [Scope]
+    
+    init() {
+      self.subscopes = []
+    }
+    
+    var parent: Scope? {
+      fatalError()
+    }
+    
+    func addScope(_ scope: Scope) {
+      subscopes.append(scope)
+    }
+    
+  }
+  
+  class TopLevel: Scope {
+    
+    override var parent: Scope? {
+      nil
+    }
+    
+  }
+  
+  class StructScope: Scope {
+    
+    private unowned let _parent: Scope
+    
+    let identifier: String
+    
+    let startLocation: SourceLocation
+    
+    let endLocation: SourceLocation
+    
+    init(
+      parent: Scope,
+      identifier: String,
+      startLocation: SourceLocation,
+      endLocation: SourceLocation
+    ) {
+      self._parent = parent
+      self.identifier = identifier
+      self.startLocation = startLocation
+      self.endLocation = endLocation
+    }
+    
+    override var parent: Scope? {
+      _parent
+    }
+    
+    var storedPropertiesCount: Int {
+      subscopes.reduce(0) { partial, each in
+        guard let varScope = each as? VariableScope else {
+          return partial
+        }
+        return varScope.storageBackwardedBindingsCount + partial
+      }
+    }
+    
+    var untyppedBindings: [UntyppedBinding] {
+      subscopes.compactMap { each -> [UntyppedBinding]? in
+        guard let varScope = each as? VariableScope else {
+          return nil
+        }
+        return varScope.untyppedBindings
+      }.flatMap({$0})
+    }
+    
+  }
+  
+  class VariableScope: Scope {
+    
+    private unowned let _parent: Scope
+    
+    let usesLetKeyword: Bool
+    
+    init(parent: Scope, usesLetKeyword: Bool) {
+      self._parent = parent
+      self.usesLetKeyword = usesLetKeyword
+    }
+    
+    override var parent: Scope? {
+      _parent
+    }
+    
+    var storageBackwardedBindingsCount: Int {
+      subscopes.filter { each in
+        (each as? BindingScope)?.isStored == true
+      }.count
+    }
+    
+    var untyppedBindings: [UntyppedBinding] {
+      subscopes.compactMap { each in
+        guard let binding = each as? BindingScope else {
+          return nil
+        }
+        guard binding.type == nil else {
+          return nil
+        }
+        return (
+          binding.identifier,
+          binding.startLocation,
+          binding.endLocation
+        )
+      }
+    }
+    
+  }
+  
+  class BindingScope: Scope {
+    
+    private unowned let _parent: Scope
+    
+    let identifier: String
+    
+    let startLocation: SourceLocation
+    
+    let endLocation: SourceLocation
+    
+    let type: String?
+    
+    let isStored: Bool
+    
+    init(
+      parent: Scope,
+      identifier: String,
+      startLocation: SourceLocation,
+      endLocation: SourceLocation,
+      type: String?,
+      isStored: Bool
+    ) {
+      self._parent = parent
+      self.identifier = identifier
+      self.startLocation = startLocation
+      self.endLocation = endLocation
+      self.type = type
+      self.isStored = isStored
+    }
+    
+    override var parent: Scope? {
+      _parent
+    }
+    
+  }
+  
+  typealias UntyppedBinding = (String, SourceLocation, SourceLocation)
+  
+  let treeID: UInt
+  
   let tree: Syntax
   
   let slc: SourceLocationConverter
@@ -237,10 +390,38 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
   
   private var hasDetected: Bool
   
-  init(tree: Syntax, slc: SourceLocationConverter) {
+  private var rootScope: TopLevel
+  
+  private unowned var _topScope: Scope
+  
+  func topScope<T: Scope>() -> T {
+    return unsafeDowncast(_topScope, to: T.self)
+  }
+  
+  func mayBeTopScope<T: Scope>() -> T? {
+    return _topScope as? T
+  }
+  
+  func pushScope(_ scope: Scope) {
+    _topScope.addScope(scope)
+    _topScope = scope
+  }
+  
+  @discardableResult
+  func popScope<T: Scope>() -> T {
+    let popped = _topScope
+    _topScope = _topScope.parent!
+    return unsafeDowncast(popped, to: T.self)
+  }
+  
+  init(treeID: UInt, tree: Syntax, slc: SourceLocationConverter) {
+    self.treeID = treeID
     self.tree = tree
     self.slc = slc
     self.decls = []
+    let topLevel = TopLevel()
+    self.rootScope = topLevel
+    self._topScope = topLevel
     self.hasDetected = false
   }
   
@@ -251,6 +432,108 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     walk(tree)
     hasDetected = true
     return decls
+  }
+  
+  override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+    pushScope(
+      StructScope(
+        parent: topScope(),
+        identifier: node.identifier.text,
+        startLocation: node.startLocation(converter: slc),
+        endLocation: node.endLocation(converter: slc)
+      )
+    )
+    return super.visit(node)
+  }
+  
+  override func visitPost(_ node: StructDeclSyntax) {
+    super.visitPost(node)
+    let topScope: StructScope = popScope()
+    updateDecls(topScope)
+  }
+  
+  override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    pushScope(VariableScope(parent: topScope(), usesLetKeyword: node.usesLetKeyword))
+    return super.visit(node)
+  }
+  
+  override func visitPost(_ node: VariableDeclSyntax) {
+    super.visitPost(node)
+    popScope()
+  }
+  
+  override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
+    let parentVarScope = mayBeTopScope() as? VariableScope
+    pushScope(
+      BindingScope(
+        parent: topScope(),
+        identifier: node.pattern.as(IdentifierPatternSyntax.self)!.identifier.text,
+        startLocation: node.startLocation(converter: slc),
+        endLocation: node.endLocation(converter: slc),
+        type: node.typeAnnotation?.type.description,
+        isStored: parentVarScope?.usesLetKeyword == true || node.hasStorage
+      )
+    )
+    return super.visit(node)
+  }
+  
+  override func visitPost(_ node: PatternBindingSyntax) {
+    super.visitPost(node)
+    popScope()
+  }
+  
+  private func makeUninferrablePatternBinding(
+    _ untyppedBinding: UntyppedBinding
+  ) -> UninferrablePatternBinding {
+    let (identifier, startLoc, endLoc) = untyppedBinding
+    var hasher = Hasher()
+    hasher.combine(startLoc.offset)
+    hasher.combine(endLoc.offset)
+    let id = UInt(bitPattern: hasher.finalize())
+    return UninferrablePatternBinding(
+      treeID: treeID,
+      id: id,
+      identifier: identifier,
+      startLocation: startLoc,
+      endLocation: endLoc,
+      maybeType: nil
+    )
+  }
+  
+  private func updateDecls(_ scope: StructScope) {
+    guard scope.storedPropertiesCount > 0 else {
+      return
+    }
+    
+    let decl = RefactorableDecl(
+      treeID: treeID,
+      identifier: scope.identifier,
+      startLocation: scope.startLocation,
+      endLocation: scope.endLocation,
+      uninferrablePatternBindings: scope.untyppedBindings.map(makeUninferrablePatternBinding)
+    )
+    
+    decls.append(decl)
+  }
+  
+}
+
+extension VariableDeclSyntax {
+  
+  fileprivate var usesLetKeyword: Bool {
+    if letOrVarKeyword.tokenKind == .letKeyword {
+      return true
+    }
+    return false
+  }
+  
+}
+
+
+extension PatternBindingSyntax {
+  
+  fileprivate var hasStorage: Bool {
+    accessor == nil
   }
   
 }

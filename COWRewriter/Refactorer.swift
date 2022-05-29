@@ -9,27 +9,15 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxParser
 
-typealias DetailedExprSyntax = DetailedSyntax<ExprSyntax>
-
-typealias DetailedDecl = DetailedSyntax<DeclSyntax>
-
-typealias DetailedPatternBindingSyntax = DetailedSyntax<PatternBindingSyntax>
-
-struct DetailedSyntax<SyntaxType: SyntaxProtocol> {
+struct RefactorableDecl {
   
-  let syntax: SyntaxType
+  let treeID: UInt
+  
+  let identifier: String
   
   let startLocation: SourceLocation
   
   let endLocation: SourceLocation
-  
-}
-
-struct RefactorableDecl {
-  
-  let treeID: UUID
-  
-  let decl: DetailedDecl
   
   /// COW refactoring based on pattern binding's type.
   let uninferrablePatternBindings: [UninferrablePatternBinding]
@@ -39,12 +27,16 @@ struct RefactorableDecl {
 /// Pattern bindings that cannot infer its type.
 struct UninferrablePatternBinding {
   
+  let treeID: UInt
+  
   /// The identifier for the error type in the context.
-  let identifier: UUID
+  let id: UInt
   
-  let patternBindingSyntax: DetailedPatternBindingSyntax
+  let identifier: String
   
-  let treeID: UUID
+  let startLocation: SourceLocation
+  
+  let endLocation: SourceLocation
   
   let maybeType: String?
   
@@ -68,7 +60,7 @@ final class Refactorer {
   
   private let slc: SourceLocationConverter
   
-  private let treeID: UUID
+  private let treeID: UInt
   
   @inlinable
   var refactorableDecls: [RefactorableDecl] {
@@ -83,7 +75,7 @@ final class Refactorer {
         
         var tree: Syntax
         
-        let treeID: UUID
+        let treeID: UInt
         
         var refactorableDecls: [RefactorableDecl]
         
@@ -147,8 +139,10 @@ final class Refactorer {
     self.tree = Syntax(tree)
     self.slc = SourceLocationConverter(file: file, tree: tree)
     self._refactorableDecls_ = nil
-    self.treeID = UUID()
+    self.treeID = UInt.random(in: .min...(.max))
   }
+  
+  // MARK: Backwarded Properties
   
   private var _refactorableDecls_: [RefactorableDecl]?
   

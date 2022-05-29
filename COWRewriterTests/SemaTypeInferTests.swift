@@ -25,8 +25,8 @@ class SemaTypeInferTests: SemaTests {
     var value2 = 0
     """
     withSource(source)
-      .expect(identifier: "value1", type: "Int")
-      .expect(identifier: "value2", type: "Int")
+      .expectTypeChecking("value1", with: "Int")
+      .expectTypeChecking("value2", with: "Int")
       .evaluate(.typeCheck)
   }
   
@@ -36,8 +36,8 @@ class SemaTypeInferTests: SemaTests {
     let value2 = false
     """
     withSource(source)
-      .expect(identifier: "value1", type: "Bool")
-      .expect(identifier: "value2", type: "Bool")
+      .expectTypeChecking("value1", with: "Bool")
+      .expectTypeChecking("value2", with: "Bool")
       .evaluate(.typeCheck)
   }
   
@@ -47,8 +47,8 @@ class SemaTypeInferTests: SemaTests {
     let value2 = 0.2
     """
     withSource(source)
-      .expect(identifier: "value1", type: "Double")
-      .expect(identifier: "value2", type: "Double")
+      .expectTypeChecking("value1", with: "Double")
+      .expectTypeChecking("value2", with: "Double")
       .evaluate(.typeCheck)
   }
   
@@ -58,8 +58,8 @@ class SemaTypeInferTests: SemaTests {
     let value2 = "b"
     """
     withSource(source)
-      .expect(identifier: "value1", type: "String")
-      .expect(identifier: "value2", type: "String")
+      .expectTypeChecking("value1", with: "String")
+      .expectTypeChecking("value2", with: "String")
       .evaluate(.typeCheck)
   }
   

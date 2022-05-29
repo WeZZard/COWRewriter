@@ -17,31 +17,66 @@ class SemaTests: XCTestCase {
   
   class EvaluationRequestBuilder {
     
-    private struct Expectation {
+    private struct TypeCheckResult {
       let type: String?
+      let file: StaticString
+      let line: UInt
+    }
+    
+    private struct RefactorableDeclDetectionResult {
+      let identifier: String
       let file: StaticString
       let line: UInt
     }
     
     let source: String
     
-    private var expectations: [GlobalIdentifier : Expectation]
+    private var expectedTypeCheckResults: [GlobalIdentifier : TypeCheckResult]
     
     private var ignoredIdentifiers: Set<GlobalIdentifier>
     
+    private var expectRefactorableDecls: [RefactorableDeclDetectionResult]
+    
     init(source: String) {
       self.source = source
-      self.expectations = [:]
+      self.expectedTypeCheckResults = [:]
       self.ignoredIdentifiers = []
+      self.expectRefactorableDecls = []
     }
     
-    func expect(identifier: GlobalIdentifier, type: String?, file: StaticString = #file, line: UInt = #line) -> EvaluationRequestBuilder {
-      expectations[identifier] = Expectation(type: type, file: file, line: line)
+    func expectTypeChecking(
+      _ identifier: GlobalIdentifier,
+      with type: String?,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) -> EvaluationRequestBuilder {
+      expectedTypeCheckResults[identifier] = TypeCheckResult(
+        type: type,
+        file: file,
+        line: line
+      )
       return self
     }
     
-    func ignore(identifier: GlobalIdentifier) -> EvaluationRequestBuilder {
-      self.ignoredIdentifiers.insert(identifier)
+    func ignoreTypeChecking(
+      _ identifier: GlobalIdentifier
+    ) -> EvaluationRequestBuilder {
+      ignoredIdentifiers.insert(identifier)
+      return self
+    }
+    
+    func expectRefactorableDecl(
+      _ identifier: String,
+      file: StaticString = #file,
+      line: UInt = #line
+    ) -> EvaluationRequestBuilder {
+      expectRefactorableDecls.append(
+        RefactorableDeclDetectionResult(
+          identifier: identifier,
+          file: file,
+          line: line
+        )
+      )
       return self
     }
     
@@ -55,77 +90,10 @@ class SemaTests: XCTestCase {
         self.rawValue = rawValue
       }
       
-      static let typeCheck = EvaluationOptions(rawValue: 0x1 << 0)
-      static let refactorableDeclDetect = EvaluationOptions(rawValue: 0x1 << 1)
+      static let typeCheck              = EvaluationOptions(rawValue: 0x1 << 0)
+      static let refactorableDecls      = EvaluationOptions(rawValue: 0x1 << 1)
+      static let all: EvaluationOptions = [typeCheck, refactorableDecls]
       
-      static let all: EvaluationOptions = [typeCheck, refactorableDeclDetect]
-      
-    }
-    
-    func evaluateTypeCheck(
-      file: StaticString = #file,
-      line: UInt = #line
-    ) {
-      do {
-        let context = try Context(source: source)
-        let sema = Sema(target: .of64Bit, input: context, output: context)
-        sema.performIfNeeded()
-        let reader = BindingsReader(tree: sema.output.tree)
-        reader.readIfNeeded()
-        for (identifier, eachExpectation) in expectations {
-          if let readType = reader.bindings[identifier] {
-            switch (readType, eachExpectation.type) {
-            case let (.some(readType), .some(builtType)):
-              XCTAssertEqual(
-                readType,
-                builtType,
-                "Type bound to \"\(identifier) : \(readType)\" is different from the expectation: \"\(builtType)\".",
-                file: eachExpectation.file,
-                line: eachExpectation.line
-              )
-            case let (.some(readType), .none):
-              XCTFail(
-                "Type bound to \"\(identifier) : \(readType)\" is different from the expectation: nil.",
-                file: eachExpectation.file,
-                line: eachExpectation.line
-              )
-            case let (.none, .some(builtType)):
-              XCTFail(
-                "No type bound to \"\(identifier)\". Expecting \"\(builtType)\".",
-                file: eachExpectation.file,
-                line: eachExpectation.line
-              )
-            case (.none, .none):
-              break
-            }
-          } else {
-            XCTFail(
-              "\"\(identifier)\" has not read. There may be some issues in \(_typeName(BindingsReader.self)) or you need to check your expectations.",
-              file: eachExpectation.file,
-              line: eachExpectation.line
-            )
-          }
-        }
-        for (identifier, readType) in reader.bindings {
-          if !expectations.keys.contains(identifier) && !ignoredIdentifiers.contains(identifier) {
-            if let readType = readType {
-              XCTFail(
-                "\"\(identifier) : \(readType)\" has read but not found in expectations. There may be some issues in \(_typeName(BindingsReader.self)) or you need to check your expectations.",
-                file: file,
-                line: line
-              )
-            } else {
-              XCTFail(
-                "\"\(identifier)\" has read but not found in expectations. There may be some issues in \(_typeName(BindingsReader.self)) or you need to check your expectations.",
-                file: file,
-                line: line
-              )
-            }
-          }
-        }
-      } catch let error {
-        XCTFail(error.localizedDescription)
-      }
     }
     
     func evaluate(
@@ -133,12 +101,105 @@ class SemaTests: XCTestCase {
       file: StaticString = #file,
       line: UInt = #line
     ) {
-      if options.contains(.typeCheck) {
-        evaluateTypeCheck(file: file, line: line)
+      guard !options.isEmpty else {
+        return
       }
-      if options.contains(.refactorableDeclDetect) {
+      
+      do {
+        
+        let context = try Context(source: source)
+        let sema = Sema(target: .of64Bit, input: context, output: context)
+        sema.performIfNeeded()
+        
+        if options.contains(.typeCheck) {
+          evaluateTypeCheck(tree: sema.output.tree, file: file, line: line)
+        }
+        if options.contains(.refactorableDecls) {
+          evaluateRefactorableDeclsDetection(actual: sema.output.refactorableDecls, file: file, line: line)
+        }
+        
+      } catch let error {
+        XCTFail(error.localizedDescription, file: file, line: line)
       }
     }
+    
+    private func evaluateTypeCheck(tree: Syntax, file: StaticString, line: UInt) {
+      let reader = BindingsReader(tree: tree)
+      reader.readIfNeeded()
+      for (identifier, eachExpectation) in expectedTypeCheckResults {
+        if let readType = reader.bindings[identifier] {
+          switch (readType, eachExpectation.type) {
+          case let (.some(readType), .some(builtType)):
+            XCTAssertEqual(
+              readType,
+              builtType,
+              "Type bound to \"\(identifier) : \(readType)\" is different from the expectation: \"\(builtType)\".",
+              file: eachExpectation.file,
+              line: eachExpectation.line
+            )
+          case let (.some(readType), .none):
+            XCTFail(
+              "Type bound to \"\(identifier) : \(readType)\" is different from the expectation: nil.",
+              file: eachExpectation.file,
+              line: eachExpectation.line
+            )
+          case let (.none, .some(builtType)):
+            XCTFail(
+              "No type bound to \"\(identifier)\". Expecting \"\(builtType)\".",
+              file: eachExpectation.file,
+              line: eachExpectation.line
+            )
+          case (.none, .none):
+            break
+          }
+        } else {
+          XCTFail(
+            "\"\(identifier)\" has not read. There may be some issues in \(_typeName(BindingsReader.self)) or you need to check your expectations.",
+            file: eachExpectation.file,
+            line: eachExpectation.line
+          )
+        }
+      }
+      for (identifier, readType) in reader.bindings {
+        if !expectedTypeCheckResults.keys.contains(identifier) && !ignoredIdentifiers.contains(identifier) {
+          if let readType = readType {
+            XCTFail(
+              "\"\(identifier) : \(readType)\" has read but not found in expectations. There may be some issues in \(_typeName(BindingsReader.self)) or you need to check your expectations.",
+              file: file,
+              line: line
+            )
+          } else {
+            XCTFail(
+              "\"\(identifier)\" has read but not found in expectations. There may be some issues in \(_typeName(BindingsReader.self)) or you need to check your expectations.",
+              file: file,
+              line: line
+            )
+          }
+        }
+      }
+    }
+    
+    private func evaluateRefactorableDeclsDetection(actual: [RefactorableDecl], file: StaticString, line: UInt) {
+      for eachExpected in expectRefactorableDecls {
+        if !actual.contains(where: {$0.identifier == eachExpected.identifier}) {
+          XCTFail(
+            "Expected refactorable decl of identifier \"\(eachExpected.identifier)\" is not detected.",
+            file: eachExpected.file,
+            line: eachExpected.line
+          )
+        }
+      }
+      for eachActual in actual {
+        if !expectRefactorableDecls.contains(where: {$0.identifier == eachActual.identifier}) {
+          XCTFail(
+            "Unexpected refactorable decl of identifier \"\(eachActual.identifier)\" detected.",
+            file: file,
+            line: line
+          )
+        }
+      }
+    }
+    
   }
   
   internal func withSource(_ source: String) -> EvaluationRequestBuilder {
@@ -163,7 +224,7 @@ class SemaTests: XCTestCase {
     
     var tree: Syntax
     
-    let treeID: UUID
+    let treeID: UInt
     
     var refactorableDecls: [RefactorableDecl]
     
@@ -171,7 +232,7 @@ class SemaTests: XCTestCase {
     
     init(source: String) throws {
       self.tree = Syntax(try SyntaxParser.parse(source: source))
-      self.treeID = UUID()
+      self.treeID = UInt.random(in: .min...(.max))
       self.refactorableDecls = []
       self.slc = SourceLocationConverter(file: "IN_MEMORY_SOURCE", source: source)
     }
