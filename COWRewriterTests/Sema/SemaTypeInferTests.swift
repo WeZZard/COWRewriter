@@ -15,7 +15,7 @@ import COWRewriter
 
 // TODO: Need to take malformed but parsable AST into consideration?
 
-class SemaTypeInferTests: SemaTests {
+class SemaTypeInferTests: SemaTestsBase {
   
   // MARK: Can Infer Type of Pattern Binding Syntax
   

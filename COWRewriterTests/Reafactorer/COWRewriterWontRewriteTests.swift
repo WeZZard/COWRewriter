@@ -1,5 +1,5 @@
 //
-//  RewriteContextWontRewriteTests.swift
+//  COWRewriterWontRewriteTests.swift
 //  COWRewriterTests
 //
 //  Created by WeZZard on 5/22/22.
@@ -7,9 +7,9 @@
 
 import XCTest
 
-class RewriteContextWontRewriteTests: RewriteContextTests {
+class COWRewriterWontRewriteTests: COWRewriterTestsBase {
   
-  func testRewriteContextWontRewriteEmptyStruct() async {
+  func testWontRewriteEmptyStruct() async {
     let source = """
     struct Foo {
     }
@@ -23,7 +23,7 @@ class RewriteContextWontRewriteTests: RewriteContextTests {
     await evaluate(source: source, expected: expected)
   }
   
-  func testRewriteContextWontRewriteStructWithUniqueComputedProperty() async {
+  func testWontRewriteStructWithUniqueComputedProperty() async {
     let source = """
     struct Foo {
     
@@ -43,7 +43,7 @@ class RewriteContextWontRewriteTests: RewriteContextTests {
     await evaluate(source: source, expected: expected)
   }
   
-  func testRewriteContextWontRewriteStructWithDedicatedMultipleComputedProperty() async {
+  func testWontRewriteStructWithDedicatedMultipleComputedProperty() async {
     let source = """
     struct Foo {
     
@@ -71,7 +71,7 @@ class RewriteContextWontRewriteTests: RewriteContextTests {
     await evaluate(source: source, expected: expected)
   }
   
-  func testRewriteContextWontRewriteStructWithUniqueStoredPropertyWhichHashAppliedCOWTechniques() async {
+  func testWontRewriteStructWithUniqueStoredPropertyWhichHashAppliedCOWTechniques() async {
     let source = """
     struct Foo {
       var foo: Int {
@@ -159,7 +159,7 @@ class RewriteContextWontRewriteTests: RewriteContextTests {
     await evaluate(source: source, expected: expected)
   }
   
-  func testRewriteContextWontRewriteStructWithUniqueStoredPropertyWhichHashAppliedCOWTechniquesWithArbitraryStorageClass() async {
+  func testWontRewriteStructWithUniqueStoredPropertyWhichHashAppliedCOWTechniquesWithArbitraryStorageClass() async {
     let source = """
     struct Foo {
       var foo: Int {

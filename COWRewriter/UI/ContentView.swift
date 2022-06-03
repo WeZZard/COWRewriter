@@ -31,9 +31,9 @@ struct ContentView: View {
           .transition(.opacity)
       }
     }
-    .onChange(of: selectedFileURL, perform: onSelectedFileUrlChange)
     .padding()
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .onChange(of: selectedFileURL, perform: onSelectedFileUrlChange)
     .onDrop(
       of: [.fileURL],
       isTargeted: nil,
@@ -57,11 +57,6 @@ struct ContentView: View {
     )
   }
   
-  private func onSelectedFileUrlChange(_ url: URL?) {
-    let context = url.map(RewriteContext.init)
-    self.context = context
-  }
-  
   @ViewBuilder
   private var noUrlView: some View {
     VStack {
@@ -76,6 +71,11 @@ struct ContentView: View {
       .padding(32)
       Spacer()
     }
+  }
+  
+  private func onSelectedFileUrlChange(_ url: URL?) {
+    let context = url.map(RewriteContext.init)
+    self.context = context
   }
   
   private func onTapOpen() {

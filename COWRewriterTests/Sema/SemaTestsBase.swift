@@ -1,5 +1,5 @@
 //
-//  SemaTests.swift
+//  SemaTestsBase.swift
 //  COWRewriterTests
 //
 //  Created by WeZZard on 5/26/22.
@@ -13,7 +13,7 @@ import SwiftSyntaxBuilder
 @testable
 import COWRewriter
 
-class SemaTests: XCTestCase {
+class SemaTestsBase: XCTestCase {
   
   class EvaluationRequestBuilder {
     

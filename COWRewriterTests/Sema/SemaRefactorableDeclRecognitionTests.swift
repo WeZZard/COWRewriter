@@ -13,7 +13,7 @@ import SwiftSyntaxBuilder
 @testable
 import COWRewriter
 
-class SemaRefactorableDeclRecognitionTests: SemaTests {
+class SemaRefactorableDeclRecognitionTests: SemaTestsBase {
   
   // MARK: Won't Recognize
   

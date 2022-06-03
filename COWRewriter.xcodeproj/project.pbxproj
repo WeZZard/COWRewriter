@@ -20,14 +20,23 @@
 		9C0809FF2838E6C400ACDCE9 /* FilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */; };
 		9C080A012838E70100ACDCE9 /* DeclPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A002838E70100ACDCE9 /* DeclPicker.swift */; };
 		9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */; };
-		9C080A0E283965E500ACDCE9 /* RewriteContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A0D283965E500ACDCE9 /* RewriteContextTests.swift */; };
+		9C080A0E283965E500ACDCE9 /* COWRewriterTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A0D283965E500ACDCE9 /* COWRewriterTestsBase.swift */; };
 		9C080A102839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */; };
-		9C080A122839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A112839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift */; };
-		9C080A142839F0D400ACDCE9 /* RewriteContextRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A132839F0D400ACDCE9 /* RewriteContextRewriteTests.swift */; };
+		9C080A122839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A112839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift */; };
+		9C080A142839F0D400ACDCE9 /* COWRewritertRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A132839F0D400ACDCE9 /* COWRewritertRewriteTests.swift */; };
 		9C2C13DB283E743D00978CD9 /* Refactorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2C13DA283E743D00978CD9 /* Refactorer.swift */; };
+		9C46396B2845D8820020FCEF /* ScopeBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C46396A2845D8820020FCEF /* ScopeBuilderTests.swift */; };
+		9C46396D284685DF0020FCEF /* RuntimeErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C46396C284685DF0020FCEF /* RuntimeErrorHandling.swift */; };
+		9C46396F28487C900020FCEF /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C46396E28487C900020FCEF /* Transaction.swift */; };
+		9C4639712849A9760020FCEF /* NameLookUpRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4639702849A9760020FCEF /* NameLookUpRequest.swift */; };
+		9C4639732849A9920020FCEF /* ScopeNameLookUpTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4639722849A9920020FCEF /* ScopeNameLookUpTests.swift */; };
+		9C4639752849C5890020FCEF /* ScopeTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4639742849C5890020FCEF /* ScopeTestsBase.swift */; };
+		9C6CE49D2849EFF10068B319 /* Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6CE49C2849EFF10068B319 /* Name.swift */; };
+		9C6CE49F2849F0210068B319 /* ScopeBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6CE49E2849F0210068B319 /* ScopeBuilder.swift */; };
 		9C7EA675283E98C0003E9194 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA674283E98C0003E9194 /* Sema.swift */; };
 		9C7EA677283E9E39003E9194 /* COWRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA676283E9E39003E9194 /* COWRewriter.swift */; };
-		9CDEE1EE283F4147005C3A4F /* SemaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1ED283F4147005C3A4F /* SemaTests.swift */; };
+		9CC615D42843B7FF0027DF5B /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC615D32843B7FF0027DF5B /* Scope.swift */; };
+		9CDEE1EE283F4147005C3A4F /* SemaTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */; };
 		9CDEE1F0283FACB9005C3A4F /* SemaTypeInferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */; };
 		9CDEE1F2283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1F1283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift */; };
 /* End PBXBuildFile section */
@@ -64,14 +73,23 @@
 		9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePicker.swift; sourceTree = "<group>"; };
 		9C080A002838E70100ACDCE9 /* DeclPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeclPicker.swift; sourceTree = "<group>"; };
 		9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomToolbar.swift; sourceTree = "<group>"; };
-		9C080A0D283965E500ACDCE9 /* RewriteContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteContextTests.swift; sourceTree = "<group>"; };
+		9C080A0D283965E500ACDCE9 /* COWRewriterTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterTestsBase.swift; sourceTree = "<group>"; };
 		9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+COWRewriterTestsAdditions.swift"; sourceTree = "<group>"; };
-		9C080A112839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteContextWontRewriteTests.swift; sourceTree = "<group>"; };
-		9C080A132839F0D400ACDCE9 /* RewriteContextRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteContextRewriteTests.swift; sourceTree = "<group>"; };
+		9C080A112839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterWontRewriteTests.swift; sourceTree = "<group>"; };
+		9C080A132839F0D400ACDCE9 /* COWRewritertRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewritertRewriteTests.swift; sourceTree = "<group>"; };
 		9C2C13DA283E743D00978CD9 /* Refactorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Refactorer.swift; sourceTree = "<group>"; };
+		9C46396A2845D8820020FCEF /* ScopeBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeBuilderTests.swift; sourceTree = "<group>"; };
+		9C46396C284685DF0020FCEF /* RuntimeErrorHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeErrorHandling.swift; sourceTree = "<group>"; };
+		9C46396E28487C900020FCEF /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		9C4639702849A9760020FCEF /* NameLookUpRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameLookUpRequest.swift; sourceTree = "<group>"; };
+		9C4639722849A9920020FCEF /* ScopeNameLookUpTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeNameLookUpTests.swift; sourceTree = "<group>"; };
+		9C4639742849C5890020FCEF /* ScopeTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeTestsBase.swift; sourceTree = "<group>"; };
+		9C6CE49C2849EFF10068B319 /* Name.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Name.swift; sourceTree = "<group>"; };
+		9C6CE49E2849F0210068B319 /* ScopeBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeBuilder.swift; sourceTree = "<group>"; };
 		9C7EA674283E98C0003E9194 /* Sema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
 		9C7EA676283E9E39003E9194 /* COWRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriter.swift; sourceTree = "<group>"; };
-		9CDEE1ED283F4147005C3A4F /* SemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaTests.swift; sourceTree = "<group>"; };
+		9CC615D32843B7FF0027DF5B /* Scope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
+		9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaTestsBase.swift; sourceTree = "<group>"; };
 		9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaTypeInferTests.swift; sourceTree = "<group>"; };
 		9CDEE1F1283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaRefactorableDeclRecognitionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -127,15 +145,10 @@
 		9C0809C72838BA2F00ACDCE9 /* COWRewriter */ = {
 			isa = PBXGroup;
 			children = (
-				9C0809C82838BA2F00ACDCE9 /* TheApp.swift */,
-				9C0809CA2838BA2F00ACDCE9 /* ContentView.swift */,
-				9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */,
-				9C080A002838E70100ACDCE9 /* DeclPicker.swift */,
-				9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */,
-				9C0809F32838C42300ACDCE9 /* RewriteContext.swift */,
-				9C2C13DA283E743D00978CD9 /* Refactorer.swift */,
-				9C7EA674283E98C0003E9194 /* Sema.swift */,
-				9C7EA676283E9E39003E9194 /* COWRewriter.swift */,
+				9C6CE49A2849EF0C0068B319 /* UI */,
+				9C6CE4982849EEF80068B319 /* Sema */,
+				9C6CE4992849EF010068B319 /* Refactorer */,
+				9C6CE49B2849EF1D0068B319 /* Utilities */,
 				9C0809CC2838BA3000ACDCE9 /* Assets.xcassets */,
 				9C0809D12838BA3000ACDCE9 /* COWRewriter.entitlements */,
 				9C0809CE2838BA3000ACDCE9 /* Preview Content */,
@@ -154,12 +167,8 @@
 		9C0809D92838BA3000ACDCE9 /* COWRewriterTests */ = {
 			isa = PBXGroup;
 			children = (
-				9C080A0D283965E500ACDCE9 /* RewriteContextTests.swift */,
-				9C080A112839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift */,
-				9C080A132839F0D400ACDCE9 /* RewriteContextRewriteTests.swift */,
-				9CDEE1ED283F4147005C3A4F /* SemaTests.swift */,
-				9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */,
-				9CDEE1F1283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift */,
+				9C6CE4A02849F38A0068B319 /* Sema */,
+				9C6CE4A12849F38E0068B319 /* Reafactorer */,
 				9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */,
 			);
 			path = COWRewriterTests;
@@ -172,6 +181,72 @@
 				9C0809E62838BA3000ACDCE9 /* COWRewriterUITestsLaunchTests.swift */,
 			);
 			path = COWRewriterUITests;
+			sourceTree = "<group>";
+		};
+		9C6CE4982849EEF80068B319 /* Sema */ = {
+			isa = PBXGroup;
+			children = (
+				9C7EA674283E98C0003E9194 /* Sema.swift */,
+				9CC615D32843B7FF0027DF5B /* Scope.swift */,
+				9C6CE49C2849EFF10068B319 /* Name.swift */,
+				9C46396E28487C900020FCEF /* Transaction.swift */,
+				9C4639702849A9760020FCEF /* NameLookUpRequest.swift */,
+				9C6CE49E2849F0210068B319 /* ScopeBuilder.swift */,
+			);
+			path = Sema;
+			sourceTree = "<group>";
+		};
+		9C6CE4992849EF010068B319 /* Refactorer */ = {
+			isa = PBXGroup;
+			children = (
+				9C7EA676283E9E39003E9194 /* COWRewriter.swift */,
+				9C0809F32838C42300ACDCE9 /* RewriteContext.swift */,
+				9C2C13DA283E743D00978CD9 /* Refactorer.swift */,
+			);
+			path = Refactorer;
+			sourceTree = "<group>";
+		};
+		9C6CE49A2849EF0C0068B319 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				9C0809C82838BA2F00ACDCE9 /* TheApp.swift */,
+				9C0809CA2838BA2F00ACDCE9 /* ContentView.swift */,
+				9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */,
+				9C080A002838E70100ACDCE9 /* DeclPicker.swift */,
+				9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		9C6CE49B2849EF1D0068B319 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				9C46396C284685DF0020FCEF /* RuntimeErrorHandling.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		9C6CE4A02849F38A0068B319 /* Sema */ = {
+			isa = PBXGroup;
+			children = (
+				9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */,
+				9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */,
+				9CDEE1F1283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift */,
+				9C4639742849C5890020FCEF /* ScopeTestsBase.swift */,
+				9C46396A2845D8820020FCEF /* ScopeBuilderTests.swift */,
+				9C4639722849A9920020FCEF /* ScopeNameLookUpTests.swift */,
+			);
+			path = Sema;
+			sourceTree = "<group>";
+		};
+		9C6CE4A12849F38E0068B319 /* Reafactorer */ = {
+			isa = PBXGroup;
+			children = (
+				9C080A0D283965E500ACDCE9 /* COWRewriterTestsBase.swift */,
+				9C080A112839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift */,
+				9C080A132839F0D400ACDCE9 /* COWRewritertRewriteTests.swift */,
+			);
+			path = Reafactorer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -313,13 +388,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */,
+				9C46396D284685DF0020FCEF /* RuntimeErrorHandling.swift in Sources */,
 				9C0809CB2838BA2F00ACDCE9 /* ContentView.swift in Sources */,
+				9CC615D42843B7FF0027DF5B /* Scope.swift in Sources */,
 				9C0809FF2838E6C400ACDCE9 /* FilePicker.swift in Sources */,
 				9C7EA675283E98C0003E9194 /* Sema.swift in Sources */,
 				9C0809C92838BA2F00ACDCE9 /* TheApp.swift in Sources */,
 				9C7EA677283E9E39003E9194 /* COWRewriter.swift in Sources */,
 				9C2C13DB283E743D00978CD9 /* Refactorer.swift in Sources */,
+				9C4639712849A9760020FCEF /* NameLookUpRequest.swift in Sources */,
+				9C6CE49F2849F0210068B319 /* ScopeBuilder.swift in Sources */,
+				9C46396F28487C900020FCEF /* Transaction.swift in Sources */,
 				9C080A012838E70100ACDCE9 /* DeclPicker.swift in Sources */,
+				9C6CE49D2849EFF10068B319 /* Name.swift in Sources */,
 				9C0809F42838C42300ACDCE9 /* RewriteContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -331,10 +412,13 @@
 				9CDEE1F0283FACB9005C3A4F /* SemaTypeInferTests.swift in Sources */,
 				9C080A102839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift in Sources */,
 				9CDEE1F2283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift in Sources */,
-				9C080A0E283965E500ACDCE9 /* RewriteContextTests.swift in Sources */,
-				9C080A122839F0CE00ACDCE9 /* RewriteContextWontRewriteTests.swift in Sources */,
-				9C080A142839F0D400ACDCE9 /* RewriteContextRewriteTests.swift in Sources */,
-				9CDEE1EE283F4147005C3A4F /* SemaTests.swift in Sources */,
+				9C4639752849C5890020FCEF /* ScopeTestsBase.swift in Sources */,
+				9C080A0E283965E500ACDCE9 /* COWRewriterTestsBase.swift in Sources */,
+				9C080A122839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift in Sources */,
+				9C080A142839F0D400ACDCE9 /* COWRewritertRewriteTests.swift in Sources */,
+				9C4639732849A9920020FCEF /* ScopeNameLookUpTests.swift in Sources */,
+				9C46396B2845D8820020FCEF /* ScopeBuilderTests.swift in Sources */,
+				9CDEE1EE283F4147005C3A4F /* SemaTestsBase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

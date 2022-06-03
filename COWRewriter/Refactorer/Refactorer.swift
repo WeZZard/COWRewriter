@@ -46,7 +46,7 @@ struct RefactorRequest {
   
   let decls: [RefactorableDecl]
   
-  let typedefs: [UUID : String]
+  let typedefs: [UInt : String]
   
 }
 
@@ -107,7 +107,7 @@ final class Refactorer {
   @inlinable
   func refactor(_ request: RefactorRequest) async -> Syntax {
     
-    class Context: COWRewriterInputContext {
+    class Context: COWRewriterInputContext, COWRewriterDelegate {
       
       let file: String?
       
@@ -125,10 +125,17 @@ final class Refactorer {
         self.refactorableDecls = await refactorer.refactorableDecls
       }
       
+      func rewriter(_ sender: COWRewriter, shouldRewriteDeclFrom startLocation: SourceLocation, to endLocation: SourceLocation) -> Bool {
+        refactorableDecls.contains { each in
+          each.startLocation == startLocation && each.endLocation == endLocation
+        }
+      }
+      
     }
     
     let context = await Context(refactorer: self)
     let rewriter = COWRewriter(input: context)
+    rewriter.delegate = context
     return rewriter.execute(request: request)
   }
   

@@ -9,16 +9,17 @@ import XCTest
 
 extension XCTestCase {
   
-  /// Asserts that the two strings are equal, providing Unix `diff`-style output if they are not.
+  /// Asserts that the two strings are equal, providing Unix `diff`-style output
+  /// if they are not.
   ///
   /// - Parameters:
   ///   - actual: The actual string.
   ///   - expected: The expected string.
   ///   - message: An optional description of the failure.
-  ///   - file: The file in which failure occurred. Defaults to the file name of the test case in
-  ///     which this function was called.
-  ///   - line: The line number on which failure occurred. Defaults to the line number on which this
-  ///     function was called.
+  ///   - file: The file in which failure occurred. Defaults to the file name of
+  ///     the test case in which this function was called.
+  ///   - line: The line number on which failure occurred. Defaults to the line
+  ///     number on which this function was called.
   internal func XCTAssertStringsEqualWithDiff(
     _ actual: String,
     _ expected: String,

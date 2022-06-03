@@ -1,5 +1,5 @@
 //
-//  RewriteContextRewriteTests.swift
+//  COWRewriterRewriteTests.swift
 //  COWRewriterTests
 //
 //  Created by WeZZard on 5/22/22.
@@ -7,9 +7,9 @@
 
 import XCTest
 
-class RewriteContextRewriteTests: RewriteContextTests {
+class COWRewriterRewriteTests: COWRewriterTestsBase {
   
-  func testRewriteContextRewritesStructWithSingleStoredProperty() async {
+  func testRewritesStructWithSingleStoredProperty() async {
     let source = """
     struct Foo {
       var foo: Int
@@ -156,7 +156,7 @@ class RewriteContextRewriteTests: RewriteContextTests {
     await evaluate(source: source, expected: expected)
   }
   
-  func testRewriteContextRewritesStructWithStoredPropertiesAndLeftComputedPropertiesAlone() async {
+  func testRewritesStructWithStoredPropertiesAndLeftComputedPropertiesAlone() async {
     let source = """
     struct Foo {
       var fee: Int
@@ -249,7 +249,7 @@ class RewriteContextRewriteTests: RewriteContextTests {
     await evaluate(source: source, expected: expected)
   }
   
-  func testRewriteContextRewritesStructWithUniqueStoredPropertyAndExsitedNestedStorageClass() async {
+  func testRewritesStructWithUniqueStoredPropertyAndExsitedNestedStorageClass() async {
     let source = """
     struct Foo {
       var fee: Int
