@@ -13,12 +13,11 @@
 		9C0809D02838BA3000ACDCE9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C0809CF2838BA3000ACDCE9 /* Preview Assets.xcassets */; };
 		9C0809E52838BA3000ACDCE9 /* COWRewriterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809E42838BA3000ACDCE9 /* COWRewriterUITests.swift */; };
 		9C0809E72838BA3000ACDCE9 /* COWRewriterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809E62838BA3000ACDCE9 /* COWRewriterUITestsLaunchTests.swift */; };
-		9C0809F42838C42300ACDCE9 /* RewriteContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809F32838C42300ACDCE9 /* RewriteContext.swift */; };
 		9C0809F72838C53200ACDCE9 /* SwiftSyntax in Frameworks */ = {isa = PBXBuildFile; productRef = 9C0809F62838C53200ACDCE9 /* SwiftSyntax */; };
 		9C0809F92838C53200ACDCE9 /* SwiftSyntaxBuilder in Frameworks */ = {isa = PBXBuildFile; productRef = 9C0809F82838C53200ACDCE9 /* SwiftSyntaxBuilder */; };
 		9C0809FB2838C53200ACDCE9 /* SwiftSyntaxParser in Frameworks */ = {isa = PBXBuildFile; productRef = 9C0809FA2838C53200ACDCE9 /* SwiftSyntaxParser */; };
 		9C0809FF2838E6C400ACDCE9 /* FilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */; };
-		9C080A012838E70100ACDCE9 /* DeclPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A002838E70100ACDCE9 /* DeclPicker.swift */; };
+		9C080A012838E70100ACDCE9 /* RefactorConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A002838E70100ACDCE9 /* RefactorConfigView.swift */; };
 		9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */; };
 		9C080A0E283965E500ACDCE9 /* COWRewriterTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A0D283965E500ACDCE9 /* COWRewriterTestsBase.swift */; };
 		9C080A102839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */; };
@@ -33,6 +32,8 @@
 		9C4639752849C5890020FCEF /* ScopeTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4639742849C5890020FCEF /* ScopeTestsBase.swift */; };
 		9C6CE49D2849EFF10068B319 /* Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6CE49C2849EFF10068B319 /* Name.swift */; };
 		9C6CE49F2849F0210068B319 /* ScopeBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6CE49E2849F0210068B319 /* ScopeBuilder.swift */; };
+		9C768F9D284B2EC300FE835D /* PrettyPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768F9C284B2EC300FE835D /* PrettyPrinter.swift */; };
+		9C768F9F284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */; };
 		9C7EA675283E98C0003E9194 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA674283E98C0003E9194 /* Sema.swift */; };
 		9C7EA677283E9E39003E9194 /* COWRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA676283E9E39003E9194 /* COWRewriter.swift */; };
 		9CC615D42843B7FF0027DF5B /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC615D32843B7FF0027DF5B /* Scope.swift */; };
@@ -69,9 +70,8 @@
 		9C0809E02838BA3000ACDCE9 /* COWRewriterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = COWRewriterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C0809E42838BA3000ACDCE9 /* COWRewriterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterUITests.swift; sourceTree = "<group>"; };
 		9C0809E62838BA3000ACDCE9 /* COWRewriterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		9C0809F32838C42300ACDCE9 /* RewriteContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteContext.swift; sourceTree = "<group>"; };
 		9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePicker.swift; sourceTree = "<group>"; };
-		9C080A002838E70100ACDCE9 /* DeclPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeclPicker.swift; sourceTree = "<group>"; };
+		9C080A002838E70100ACDCE9 /* RefactorConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefactorConfigView.swift; sourceTree = "<group>"; };
 		9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomToolbar.swift; sourceTree = "<group>"; };
 		9C080A0D283965E500ACDCE9 /* COWRewriterTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterTestsBase.swift; sourceTree = "<group>"; };
 		9C080A0F2839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+COWRewriterTestsAdditions.swift"; sourceTree = "<group>"; };
@@ -86,6 +86,8 @@
 		9C4639742849C5890020FCEF /* ScopeTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeTestsBase.swift; sourceTree = "<group>"; };
 		9C6CE49C2849EFF10068B319 /* Name.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Name.swift; sourceTree = "<group>"; };
 		9C6CE49E2849F0210068B319 /* ScopeBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeBuilder.swift; sourceTree = "<group>"; };
+		9C768F9C284B2EC300FE835D /* PrettyPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrettyPrinter.swift; sourceTree = "<group>"; };
+		9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Stdlib+COWRewriterAdditions.swift"; sourceTree = "<group>"; };
 		9C7EA674283E98C0003E9194 /* Sema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
 		9C7EA676283E9E39003E9194 /* COWRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriter.swift; sourceTree = "<group>"; };
 		9CC615D32843B7FF0027DF5B /* Scope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
@@ -199,9 +201,9 @@
 		9C6CE4992849EF010068B319 /* Refactorer */ = {
 			isa = PBXGroup;
 			children = (
-				9C7EA676283E9E39003E9194 /* COWRewriter.swift */,
-				9C0809F32838C42300ACDCE9 /* RewriteContext.swift */,
 				9C2C13DA283E743D00978CD9 /* Refactorer.swift */,
+				9C7EA676283E9E39003E9194 /* COWRewriter.swift */,
+				9C768F9C284B2EC300FE835D /* PrettyPrinter.swift */,
 			);
 			path = Refactorer;
 			sourceTree = "<group>";
@@ -212,7 +214,7 @@
 				9C0809C82838BA2F00ACDCE9 /* TheApp.swift */,
 				9C0809CA2838BA2F00ACDCE9 /* ContentView.swift */,
 				9C0809FE2838E6C400ACDCE9 /* FilePicker.swift */,
-				9C080A002838E70100ACDCE9 /* DeclPicker.swift */,
+				9C080A002838E70100ACDCE9 /* RefactorConfigView.swift */,
 				9C080A022838FB5500ACDCE9 /* BottomToolbar.swift */,
 			);
 			path = UI;
@@ -222,6 +224,7 @@
 			isa = PBXGroup;
 			children = (
 				9C46396C284685DF0020FCEF /* RuntimeErrorHandling.swift */,
+				9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -387,6 +390,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C768F9D284B2EC300FE835D /* PrettyPrinter.swift in Sources */,
 				9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */,
 				9C46396D284685DF0020FCEF /* RuntimeErrorHandling.swift in Sources */,
 				9C0809CB2838BA2F00ACDCE9 /* ContentView.swift in Sources */,
@@ -399,9 +403,9 @@
 				9C4639712849A9760020FCEF /* NameLookUpRequest.swift in Sources */,
 				9C6CE49F2849F0210068B319 /* ScopeBuilder.swift in Sources */,
 				9C46396F28487C900020FCEF /* Transaction.swift in Sources */,
-				9C080A012838E70100ACDCE9 /* DeclPicker.swift in Sources */,
+				9C080A012838E70100ACDCE9 /* RefactorConfigView.swift in Sources */,
 				9C6CE49D2849EFF10068B319 /* Name.swift in Sources */,
-				9C0809F42838C42300ACDCE9 /* RewriteContext.swift in Sources */,
+				9C768F9F284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

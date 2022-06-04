@@ -37,7 +37,7 @@ class COWRewriter {
     self.input = input
   }
   
-  func execute(request: RefactorRequest) -> Syntax {
+  func execute(request: [RefactorRequest]) -> Syntax {
     let concrete = COWRewriterConcrete(delegate: self, slc: input.slc)
     return concrete.visit(input.tree)
   }

@@ -49,11 +49,15 @@ class COWRewriterTestsBase: XCTestCase {
       
       sema.performIfNeeded()
       
-      let request = RefactorRequest(
-        decls: context.refactorableDecls,
-        typedefs: [:]
-      )
-      let output = rewriter.execute(request: request)
+      let requests = context.refactorableDecls.map {
+        RefactorRequest(
+          decl: $0,
+          storageClassName: "Storage",
+          makeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",
+          typedefs: [:]
+        )
+      }
+      let output = rewriter.execute(request: requests)
       
       let actual = output.description
       

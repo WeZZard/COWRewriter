@@ -9,6 +9,16 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 
+enum FileDropError: Error {
+  
+  case systemError(Error)
+  
+  case invalidDropData
+  
+  case notSwiftSource(url: URL)
+  
+}
+
 struct FilePicker: View {
   
   @Binding
@@ -52,24 +62,39 @@ struct FilePicker: View {
   // MARK: Drag & Drop Support
   
   // TODO: Reuse data in memory when dropping the same url?
-  static func onDrop(url: Binding<URL?>) -> ([NSItemProvider]) -> Bool {
+  static func onDrop(
+    url: Binding<URL?>,
+    errorMessage: Binding<String?>
+  ) -> ([NSItemProvider]) -> Bool {
     { (providers: [NSItemProvider]) -> Bool in
-      providers.first?.loadDataRepresentation(
-        forTypeIdentifier: UTType.fileURL.identifier
-      ) { dataOrNil, _ in
-        guard let data = dataOrNil,
-              let path = String(data: data, encoding: .utf8) else {
-          return
+      Task {
+        do {
+          let loadedItem = try await providers.first?.loadItem(
+            forTypeIdentifier: UTType.fileURL.identifier
+          )
+          
+          guard let data = loadedItem as? Data,
+                let path = String(data: data, encoding: .utf8),
+                let droppedUrl = URL(string: path) else {
+            errorMessage.wrappedValue = "Invalid dropped contents."
+            return
+          }
+          
+          let urlType = try? droppedUrl
+            .resourceValues(forKeys: [.typeIdentifierKey])
+            .typeIdentifier
+          
+          guard urlType == UTType.swiftSource.identifier else {
+            errorMessage.wrappedValue = "\(droppedUrl.path) is not a Swift source file."
+            return
+          }
+          
+          url.wrappedValue = droppedUrl
+        } catch let error {
+          errorMessage.wrappedValue = error.localizedDescription
         }
-        let droppedUrl = URL(string: path)
-        let urlType = try? droppedUrl?
-          .resourceValues(forKeys: [.typeIdentifierKey])
-          .typeIdentifier
-        guard urlType == UTType.swiftSource.identifier else {
-          return
-        }
-        url.wrappedValue = droppedUrl
       }
+      
       return true
     }
   }

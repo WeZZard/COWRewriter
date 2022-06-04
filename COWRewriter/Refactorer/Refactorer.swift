@@ -9,7 +9,7 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxParser
 
-struct RefactorableDecl {
+struct RefactorableDecl: Hashable {
   
   let treeID: UInt
   
@@ -19,18 +19,24 @@ struct RefactorableDecl {
   
   let endLocation: SourceLocation
   
+  let suggestedStorageClassName: String
+  
+  let suggestedMakeUniqueStorageFunctionName: String
+  
   /// COW refactoring based on pattern binding's type.
   let uninferrablePatternBindings: [UninferrablePatternBinding]
   
 }
 
 /// Pattern bindings that cannot infer its type.
-struct UninferrablePatternBinding {
+struct UninferrablePatternBinding: Hashable {
   
   let treeID: UInt
   
   /// The identifier for the error type in the context.
   let id: UInt
+  
+  let letOrVar: String
   
   let identifier: String
   
@@ -42,15 +48,19 @@ struct UninferrablePatternBinding {
   
 }
 
-struct RefactorRequest {
+struct RefactorRequest: Equatable {
   
-  let decls: [RefactorableDecl]
+  let decl: RefactorableDecl
+  
+  let storageClassName: String
+  
+  let makeUniqueStorageFunctionName: String
   
   let typedefs: [UInt : String]
   
 }
 
-final class Refactorer {
+final class Refactorer: Equatable {
   
   private let target: Target
   
@@ -105,7 +115,7 @@ final class Refactorer {
   }
   
   @inlinable
-  func refactor(_ request: RefactorRequest) async -> Syntax {
+  func refactor(_ request: [RefactorRequest]) async -> Syntax {
     
     class Context: COWRewriterInputContext, COWRewriterDelegate {
       
@@ -147,6 +157,41 @@ final class Refactorer {
     self.slc = SourceLocationConverter(file: file, tree: tree)
     self._refactorableDecls_ = nil
     self.treeID = UInt.random(in: .min...(.max))
+  }
+  
+  enum InitializationError: Error, CustomStringConvertible {
+    
+    case notFileUrl(URL)
+    
+    case parserError(URL, Error)
+    
+    var description: String {
+      switch self {
+      case let .notFileUrl(url):
+        return "\(url) is not a file URL."
+      case let .parserError(url, error):
+        return "Error happened during parsing Swift source at \(url): \(error.localizedDescription)"
+      }
+    }
+    
+  }
+  
+  convenience init(url: URL) throws {
+    guard url.isFileURL else {
+      throw InitializationError.notFileUrl(url)
+    }
+    
+    do {
+      let tree = try SyntaxParser.parse(url)
+      let file = url.absoluteURL.path
+      self.init(target: .host, file: file, tree: tree)
+    } catch let error {
+      throw InitializationError.parserError(url, error)
+    }
+  }
+  
+  static func == (lhs: Refactorer, rhs: Refactorer) -> Bool {
+    return lhs === rhs
   }
   
   // MARK: Backwarded Properties

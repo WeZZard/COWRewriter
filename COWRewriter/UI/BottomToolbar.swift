@@ -13,9 +13,11 @@ struct BottomToolbar: View {
   var decls: [Decl]
   
   @Binding
-  var selectedDecls: Set<Decl>
+  var refactorRequests: [RefactorRequest]
   
-  let rewriteContext: RewriteContext?
+  let refactorer: Refactorer?
+  
+  let printer: PrettyPrinter
   
   @State
   private var flags: Flags = Flags()
@@ -28,9 +30,9 @@ struct BottomToolbar: View {
         .disabled(!hasSelectedAll || decls.isEmpty)
       Spacer()
       Button("Copy ...", action: copy)
-        .disabled(selectedDecls.isEmpty && !flags.isCopying)
+        .disabled(refactorRequests.isEmpty && !flags.isCopying)
       Button("Save As ...", action: saveAs)
-        .disabled(selectedDecls.isEmpty && !flags.isSaving)
+        .disabled(refactorRequests.isEmpty && !flags.isSaving)
     }
   }
   
@@ -51,16 +53,15 @@ struct BottomToolbar: View {
   }
   
   private func copy() {
-    guard let rewriteContext = rewriteContext,
+    guard let refactorer = refactorer,
           !flags.isCopying else {
       return
     }
     flags.isCopying = true
     Task {
-      let contents = await rewriteContext.rewrite(selectedDecls.map({$0.rewritableDecl}))
+      let contents = await refactorer.refactor(refactorRequests)
       NSPasteboard.general.clearContents()
-      NSPasteboard.general.setString(contents, forType: .string)
-      
+      NSPasteboard.general.setString(printer.print(contents), forType: .string)
       flags.isCopying = false
     }
   }
@@ -76,7 +77,7 @@ struct BottomToolbar: View {
       return response == .OK ? savePanel.url : nil
     }
     
-    guard let rewriteContext = rewriteContext,
+    guard let refactorer = refactorer,
           !flags.isSaving,
           let url = getURL() else {
       return
@@ -85,8 +86,9 @@ struct BottomToolbar: View {
     flags.isSaving = true
     
     Task {
-      let contents = await rewriteContext.rewrite(selectedDecls.map({$0.rewritableDecl}))
-      try contents.data(using: .utf8)?.write(to: url)
+      let syntax = await refactorer.refactor(refactorRequests)
+      let text = printer.print(syntax)
+      try text.data(using: .utf8)?.write(to: url)
       flags.isSaving = false
     }
   }

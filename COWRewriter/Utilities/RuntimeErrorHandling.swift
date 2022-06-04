@@ -11,6 +11,10 @@ func notImplemented() -> Never {
   fatalError()
 }
 
+func notImplemented<T>() -> T {
+  fatalError()
+}
+
 func abstract() -> Never {
   fatalError()
 }

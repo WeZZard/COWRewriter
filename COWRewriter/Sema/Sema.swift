@@ -77,12 +77,14 @@ class Sema {
   
   @inline(__always)
   private func perform() {
+    /*
     let typeChecker = TypeChecker(
       target: target,
       tree: input.tree,
       slc: input.slc
     )
-    let typeCheckedTree = typeChecker.check()
+     */
+    let typeCheckedTree = input.tree // FIXME: typeChecker.check()
     let detector = RefactorableDeclsDetector(
       treeID: input.treeID,
       tree: typeCheckedTree,
@@ -105,6 +107,7 @@ private class LiteralResolvingContext {
   
 }
 
+// FIXME: Crashes when type checking XML files with .swift extension.
 
 /// Currently only support type inferring for limited literal initializing of
 /// variable bindings.
@@ -190,6 +193,23 @@ private class TypeChecker: SyntaxRewriter {
   }
   
   override func visit(_ node: PatternBindingSyntax) -> Syntax {
+    scopes.append(Scope())
+    let result = super.visit(node)
+    let popped = scopes.removeLast()
+    if let literal = popped.initialzerLiteral, node.typeAnnotation == nil {
+      var typeAnnotatedNode = node
+      typeAnnotatedNode.typeAnnotation = TypeAnnotationSyntax { builder in
+        builder.useColon(.colon)
+        builder.useType(TypeSyntax(SimpleTypeIdentifierSyntax { id in
+          id.useName(.identifier(literal.resolvedName(context: context)))
+        }))
+      }
+      return Syntax(typeAnnotatedNode)
+    }
+    return result
+  }
+  
+  override func visit(_ node: OptionalBindingConditionSyntax) -> Syntax {
     scopes.append(Scope())
     let result = super.visit(node)
     let popped = scopes.removeLast()
@@ -333,6 +353,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
           return nil
         }
         return (
+          binding.letOrVar,
           binding.identifier,
           binding.startLocation,
           binding.endLocation
@@ -346,6 +367,8 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     
     private unowned let _parent: Scope
     
+    let letOrVar: String
+    
     let identifier: String
     
     let startLocation: SourceLocation
@@ -358,6 +381,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     
     init(
       parent: Scope,
+      letOrVar: String,
       identifier: String,
       startLocation: SourceLocation,
       endLocation: SourceLocation,
@@ -365,6 +389,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
       isStored: Bool
     ) {
       self._parent = parent
+      self.letOrVar = letOrVar
       self.identifier = identifier
       self.startLocation = startLocation
       self.endLocation = endLocation
@@ -378,7 +403,12 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     
   }
   
-  typealias UntyppedBinding = (String, SourceLocation, SourceLocation)
+  typealias UntyppedBinding = (
+    letOrVar: String,
+    identifier: String,
+    startLocation: SourceLocation,
+    endLocation: SourceLocation
+  )
   
   let treeID: UInt
   
@@ -467,6 +497,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     pushScope(
       BindingScope(
         parent: topScope(),
+        letOrVar: parentVarScope?.usesLetKeyword == true ? "let" : "var",
         identifier: node.pattern.as(IdentifierPatternSyntax.self)!.identifier.text,
         startLocation: node.startLocation(converter: slc),
         endLocation: node.endLocation(converter: slc),
@@ -485,7 +516,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
   private func makeUninferrablePatternBinding(
     _ untyppedBinding: UntyppedBinding
   ) -> UninferrablePatternBinding {
-    let (identifier, startLoc, endLoc) = untyppedBinding
+    let (letOrVar, identifier, startLoc, endLoc) = untyppedBinding
     var hasher = Hasher()
     hasher.combine(startLoc.offset)
     hasher.combine(endLoc.offset)
@@ -493,6 +524,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     return UninferrablePatternBinding(
       treeID: treeID,
       id: id,
+      letOrVar: letOrVar,
       identifier: identifier,
       startLocation: startLoc,
       endLocation: endLoc,
@@ -510,6 +542,10 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
       identifier: scope.identifier,
       startLocation: scope.startLocation,
       endLocation: scope.endLocation,
+      // FIXME: Need to be smart.
+      suggestedStorageClassName: "Storage",
+      // FIXME: Need to be smart.
+      suggestedMakeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",
       uninferrablePatternBindings: scope.untyppedBindings.map(makeUninferrablePatternBinding)
     )
     
