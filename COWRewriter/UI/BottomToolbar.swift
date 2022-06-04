@@ -7,27 +7,47 @@
 
 import SwiftUI
 
+protocol BottomToolbarActions: AnyObject {
+  
+  func selectAll()
+  
+  func deselectAll()
+  
+  func copy() async
+  
+  func saveAs(url: URL) async throws
+  
+}
+
 struct BottomToolbar: View {
   
+  actor Flags: ObservableObject {
+    
+    @MainActor
+    var isSaving: Bool = false
+    
+    @MainActor
+    var isCopying: Bool = false
+    
+  }
+  
+  let actions: BottomToolbarActions
+  
   @Binding
-  var decls: [Decl]
+  var candidates: [RefactorCandidate]
   
   @Binding
   var refactorRequests: [RefactorRequest]
   
-  let refactorer: Refactorer?
-  
-  let printer: PrettyPrinter
-  
-  @State
+  @StateObject
   private var flags: Flags = Flags()
   
   var body: some View {
     HStack {
       Button("Select All", action: selectAll)
-        .disabled(hasSelectedAll || decls.isEmpty)
+        .disabled(hasSelectedAll || candidates.isEmpty)
       Button("Deselect All", action: deselectAll)
-        .disabled(!hasSelectedAll || decls.isEmpty)
+        .disabled(!hasSelectedAll || candidates.isEmpty)
       Spacer()
       Button("Copy ...", action: copy)
         .disabled(refactorRequests.isEmpty && !flags.isCopying)
@@ -37,31 +57,25 @@ struct BottomToolbar: View {
   }
   
   private var hasSelectedAll: Bool {
-    decls.reduce(true, {$0 && $1.isSelected})
+    candidates.reduce(true, {$0 && $1.isSelected})
   }
   
   private func selectAll() {
-    for index in decls.indices {
-      decls[index].isSelected = true
-    }
+    actions.selectAll()
   }
   
   private func deselectAll() {
-    for index in decls.indices {
-      decls[index].isSelected = false
-    }
+    actions.deselectAll()
   }
   
   private func copy() {
-    guard let refactorer = refactorer,
-          !flags.isCopying else {
+    guard !flags.isCopying else {
       return
     }
     flags.isCopying = true
+    
     Task {
-      let contents = await refactorer.refactor(refactorRequests)
-      NSPasteboard.general.clearContents()
-      NSPasteboard.general.setString(printer.print(contents), forType: .string)
+      await actions.copy()
       flags.isCopying = false
     }
   }
@@ -77,28 +91,15 @@ struct BottomToolbar: View {
       return response == .OK ? savePanel.url : nil
     }
     
-    guard let refactorer = refactorer,
-          !flags.isSaving,
-          let url = getURL() else {
+    guard let url = getURL() else {
       return
     }
     
     flags.isSaving = true
-    
     Task {
-      let syntax = await refactorer.refactor(refactorRequests)
-      let text = printer.print(syntax)
-      try text.data(using: .utf8)?.write(to: url)
+      try await actions.saveAs(url: url)
       flags.isSaving = false
     }
-  }
-  
-  struct Flags {
-    
-    var isSaving: Bool = false
-    
-    var isCopying: Bool = false
-    
   }
   
 }

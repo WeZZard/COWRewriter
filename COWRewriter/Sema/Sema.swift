@@ -352,11 +352,11 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
         guard binding.type == nil else {
           return nil
         }
-        return (
-          binding.letOrVar,
-          binding.identifier,
-          binding.startLocation,
-          binding.endLocation
+        return UntyppedBinding(
+          letOrVar: binding.letOrVar,
+          identifier: binding.identifier,
+          startLocation: binding.startLocation,
+          endLocation: binding.endLocation
         )
       }
     }
@@ -403,12 +403,17 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     
   }
   
-  typealias UntyppedBinding = (
-    letOrVar: String,
-    identifier: String,
-    startLocation: SourceLocation,
-    endLocation: SourceLocation
-  )
+  struct UntyppedBinding {
+    
+    let letOrVar: String
+    
+    let identifier: String
+    
+    let startLocation: SourceLocation
+    
+    let endLocation: SourceLocation
+    
+  }
   
   let treeID: UInt
   
@@ -516,18 +521,17 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
   private func makeUninferrablePatternBinding(
     _ untyppedBinding: UntyppedBinding
   ) -> UninferrablePatternBinding {
-    let (letOrVar, identifier, startLoc, endLoc) = untyppedBinding
     var hasher = Hasher()
-    hasher.combine(startLoc.offset)
-    hasher.combine(endLoc.offset)
+    hasher.combine(untyppedBinding.startLocation.offset)
+    hasher.combine(untyppedBinding.endLocation.offset)
     let id = UInt(bitPattern: hasher.finalize())
     return UninferrablePatternBinding(
       treeID: treeID,
       id: id,
-      letOrVar: letOrVar,
-      identifier: identifier,
-      startLocation: startLoc,
-      endLocation: endLoc,
+      letOrVar: untyppedBinding.letOrVar,
+      identifier: untyppedBinding.identifier,
+      startLocation: untyppedBinding.startLocation,
+      endLocation: untyppedBinding.endLocation,
       maybeType: nil
     )
   }
@@ -542,9 +546,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
       identifier: scope.identifier,
       startLocation: scope.startLocation,
       endLocation: scope.endLocation,
-      // FIXME: Need to be smart.
       suggestedStorageClassName: "Storage",
-      // FIXME: Need to be smart.
       suggestedMakeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",
       uninferrablePatternBindings: scope.untyppedBindings.map(makeUninferrablePatternBinding)
     )

@@ -91,79 +91,79 @@ class SemaTypeInferTests: SemaTestsBase {
    */
   
   func testSemaCanRecognizeTypeFromPatternInitializerOfClearResultType() {
-    let source = """
-    // Free function
-    func foo() -> Foo {
-      Foo()
-    }
-    
-    // Free variable getter
-    var fee: Foo {
-      Foo()
-    }
-    
-    struct Foo {
-    
-      // Type initializer
-      Foo() {}
-    
-      // Static member function
-      static func make() -> Foo { Foo() }
-    
-      // Instance member function
-      func bar() -> Foo {
-        self
-      }
-    
-      // Instance member variable
-      var fee: Foo {
-        Foo()
-      }
-    
-      // Static member variable
-      static var fee: Foo {
-        Foo()
-      }
-    
-      // Instance member closure
-      let foe = {
-        Foo()
-      }
-    
-      // Instance member closure
-      static let foe = {
-        Foo()
-      }
-    
-    }
-    
-    let value1 = foo() // Foo
-    let value2 = fee // Foo
-    let value3 = Foo() // Foo
-    let value4 = Foo.make() // Foo
-    let value5 = Foo().bar() // Foo
-    let value6 = Foo().fee // Foo
-    let value7 = Foo.fee // Foo
-    let value8 = Foo().foe() // Foo
-    let value9 = Foo.foe() // Foo
-    """
+//    let source = """
+//    // Free function
+//    func foo() -> Foo {
+//      Foo()
+//    }
+//
+//    // Free variable getter
+//    var fee: Foo {
+//      Foo()
+//    }
+//
+//    struct Foo {
+//
+//      // Type initializer
+//      Foo() {}
+//
+//      // Static member function
+//      static func make() -> Foo { Foo() }
+//
+//      // Instance member function
+//      func bar() -> Foo {
+//        self
+//      }
+//
+//      // Instance member variable
+//      var fee: Foo {
+//        Foo()
+//      }
+//
+//      // Static member variable
+//      static var fee: Foo {
+//        Foo()
+//      }
+//
+//      // Instance member closure
+//      let foe = {
+//        Foo()
+//      }
+//
+//      // Instance member closure
+//      static let foe = {
+//        Foo()
+//      }
+//
+//    }
+//
+//    let value1 = foo() // Foo
+//    let value2 = fee // Foo
+//    let value3 = Foo() // Foo
+//    let value4 = Foo.make() // Foo
+//    let value5 = Foo().bar() // Foo
+//    let value6 = Foo().fee // Foo
+//    let value7 = Foo.fee // Foo
+//    let value8 = Foo().foe() // Foo
+//    let value9 = Foo.foe() // Foo
+//    """
     
   }
   
   func testSemaCanRecognizeTypeFromPatternInitializerOfOpaqueResultType() {
-    let source = """
-    let value1 = foo()
-    
-    func foo() -> some Foo {
-    }
-    """
+//    let source = """
+//    let value1 = foo()
+//
+//    func foo() -> some Foo {
+//    }
+//    """
     
   }
   
   func testSemaCanNotRecognizeTypeFromPatternInitializerMissingInSyntaxTree() {
-    let source = """
-    let value1 = foo()
-    """
+//    let source = """
+//    let value1 = foo()
+//    """
     
   }
   

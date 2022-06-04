@@ -22,29 +22,49 @@ enum FileDropError: Error {
 struct FilePicker: View {
   
   @Binding
-  var url: URL?
+  var selectedFileURL: URL?
   
   @State
   private var isTargetedDrop: Bool = true
   
+  @State
+  private var importErrorMessage: String? = nil
+  
   var body: some View {
-    HStack(spacing: 16) {
-      HStack {
-        if let path = url?.path {
-          Text(path)
-        } else {
-          Text("No file open")
-            .foregroundColor(.gray)
+    VStack {
+      HStack(spacing: 16) {
+        HStack {
+          if let path = selectedFileURL?.path {
+            Text(path)
+          } else {
+            Text("No file open")
+              .foregroundColor(.gray)
+          }
+          Spacer()
         }
-        Spacer()
+        Button(
+          selectedFileURL == nil ? "Open" : "Open Another",
+          action: onTapSelectFile
+        )
       }
-      Button("Open", action: onTapSelectFile)
+      ImportErrorMessageView(
+        importErrorMessage: animatedImportErrorMessage,
+        fadeEdge: .top
+      )
     }
+    .onDrop(
+      of: [.fileURL],
+      isTargeted: nil,
+      perform: FilePicker.onDrop(
+        url: animatedSelectedFileURL,
+        errorMessage: animatedImportErrorMessage
+      )
+    )
   }
   
   private func onTapSelectFile() {
     if let url = Self.open() {
-      self.url = url
+      self.selectedFileURL = url
     }
   }
   
@@ -59,6 +79,14 @@ struct FilePicker: View {
     return panel.url
   }
   
+  private var animatedImportErrorMessage: Binding<String?> {
+    $importErrorMessage.animation(.easeInOut)
+  }
+  
+  private var animatedSelectedFileURL: Binding<URL?> {
+    $selectedFileURL.animation(.easeInOut)
+  }
+  
   // MARK: Drag & Drop Support
   
   // TODO: Reuse data in memory when dropping the same url?
@@ -66,7 +94,20 @@ struct FilePicker: View {
     url: Binding<URL?>,
     errorMessage: Binding<String?>
   ) -> ([NSItemProvider]) -> Bool {
-    { (providers: [NSItemProvider]) -> Bool in
+    
+    @Sendable
+    @MainActor
+    func updateUrl(_ droppedUrl: URL) {
+      url.wrappedValue = droppedUrl
+    }
+    
+    @Sendable
+    @MainActor
+    func updateErrorMessage(_ string: String) {
+      errorMessage.wrappedValue = string
+    }
+    
+    return { (providers: [NSItemProvider]) -> Bool in
       Task {
         do {
           let loadedItem = try await providers.first?.loadItem(
@@ -76,7 +117,7 @@ struct FilePicker: View {
           guard let data = loadedItem as? Data,
                 let path = String(data: data, encoding: .utf8),
                 let droppedUrl = URL(string: path) else {
-            errorMessage.wrappedValue = "Invalid dropped contents."
+            await updateErrorMessage("Invalid dropped contents.")
             return
           }
           
@@ -85,13 +126,13 @@ struct FilePicker: View {
             .typeIdentifier
           
           guard urlType == UTType.swiftSource.identifier else {
-            errorMessage.wrappedValue = "\(droppedUrl.path) is not a Swift source file."
+            await updateErrorMessage("\(droppedUrl.path) is not a Swift source file.")
             return
           }
           
-          url.wrappedValue = droppedUrl
+          await updateUrl(droppedUrl)
         } catch let error {
-          errorMessage.wrappedValue = error.localizedDescription
+          await updateErrorMessage(error.localizedDescription)
         }
       }
       
@@ -105,6 +146,6 @@ struct FilePicker: View {
 struct FilePicker_Previews: PreviewProvider {
   
   static var previews: some View {
-    FilePicker(url: .constant(nil))
+    FilePicker(selectedFileURL: .constant(nil))
   }
 }
