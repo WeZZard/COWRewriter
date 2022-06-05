@@ -115,9 +115,9 @@ final class Refactorer: Equatable {
   }
   
   @inlinable
-  func refactor(_ request: [RefactorRequest]) async -> Syntax {
+  func refactor(_ requests: [RefactorRequest]) async -> Syntax {
     
-    class Context: COWRewriterInputContext, COWRewriterDelegate {
+    class Context: COWRewriterInputContext {
       
       let file: String?
       
@@ -145,8 +145,7 @@ final class Refactorer: Equatable {
     
     let context = await Context(refactorer: self)
     let rewriter = COWRewriter(input: context)
-    rewriter.delegate = context
-    return rewriter.execute(request: request)
+    return rewriter.execute(requests: requests)
   }
   
   @inlinable

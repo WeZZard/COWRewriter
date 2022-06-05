@@ -57,7 +57,7 @@ class COWRewriterTestsBase: XCTestCase {
           typedefs: [:]
         )
       }
-      let output = rewriter.execute(request: requests)
+      let output = rewriter.execute(requests: requests)
       
       let actual = output.description
       
