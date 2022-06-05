@@ -77,6 +77,14 @@ struct RefactorRequestsConfigView: View {
                 text: $group.userStorageClassName
               )
             }
+            // Currently always needs user to set storage variable name
+            VStack(alignment: .leading) {
+              Text("Storage Variable Name:")
+              TextField(
+                group.suggestedStorageVariableName,
+                text: $group.userStorageVariableName
+              )
+            }
             // Currently always needs user to make unique storage function name
             VStack(alignment: .leading) {
               Text("Make Unique Storage Function Name:")

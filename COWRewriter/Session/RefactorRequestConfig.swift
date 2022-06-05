@@ -43,6 +43,10 @@ struct RefactorRequestConfig: Identifiable {
   
   let suggestedMakeUniqueStorageFunctionName: String
   
+  let suggestedStorageVariableName: String
+  
+  var userStorageVariableName: String
+  
   var userMakeUniqueStorageFunctionName: String
   
   var uninferrablePatternBindings: [UninferrablePatternBindingItem]
@@ -53,6 +57,8 @@ struct RefactorRequestConfig: Identifiable {
     declName = candidate.content.identifier
     suggestedStorageClassName = candidate.content.suggestedStorageClassName
     userStorageClassName = ""
+    suggestedStorageVariableName = candidate.content.suggestedStorageVariableName
+    userStorageVariableName = ""
     suggestedMakeUniqueStorageFunctionName = candidate.content.suggestedMakeUniqueStorageFunctionName
     userMakeUniqueStorageFunctionName = ""
     uninferrablePatternBindings = candidate.content.uninferrablePatternBindings.compactMap(UninferrablePatternBindingItem.init)
@@ -62,6 +68,7 @@ struct RefactorRequestConfig: Identifiable {
     RefactorRequest(
       decl: decl,
       storageClassName: userStorageClassName.isEmpty ? suggestedStorageClassName : userStorageClassName,
+      storageVariableName: userStorageVariableName.isEmpty ? suggestedStorageVariableName : userStorageVariableName,
       makeUniqueStorageFunctionName: userMakeUniqueStorageFunctionName.isEmpty ? suggestedMakeUniqueStorageFunctionName : userMakeUniqueStorageFunctionName,
       typedefs: Dictionary(uniqueKeysWithValues: uninferrablePatternBindings.map({($0.id, $0.userType.isEmpty ? ($0.suggestedType ?? "") : $0.userType)}))
     )

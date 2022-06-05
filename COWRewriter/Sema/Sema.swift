@@ -547,6 +547,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
       startLocation: scope.startLocation,
       endLocation: scope.endLocation,
       suggestedStorageClassName: "Storage",
+      suggestedStorageVariableName: "storage",
       suggestedMakeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",
       uninferrablePatternBindings: scope.untyppedBindings.map(makeUninferrablePatternBinding)
     )

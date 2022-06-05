@@ -21,6 +21,8 @@ struct RefactorableDecl: Hashable {
   
   let suggestedStorageClassName: String
   
+  let suggestedStorageVariableName: String
+  
   let suggestedMakeUniqueStorageFunctionName: String
   
   /// COW refactoring based on pattern binding's type.
@@ -53,6 +55,8 @@ struct RefactorRequest: Equatable {
   let decl: RefactorableDecl
   
   let storageClassName: String
+  
+  let storageVariableName: String
   
   let makeUniqueStorageFunctionName: String
   

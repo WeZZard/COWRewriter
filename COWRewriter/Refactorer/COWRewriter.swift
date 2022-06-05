@@ -147,6 +147,159 @@ private func rewriteStruct(
   notImplemented()
 }
 
+private func makeStorageUnificationFunction(
+  functionName: String,
+  storageClassName: String,
+  storageVariableName: String
+) -> FunctionDeclSyntax {
+  FunctionDeclSyntax { funcDecl in
+    funcDecl.useFuncKeyword(.func)
+    funcDecl.useIdentifier(.identifier(functionName))
+    funcDecl.useSignature(FunctionSignatureSyntax({ _ in }))
+    funcDecl.useBody(
+      CodeBlockSyntax { codeBlock in
+        codeBlock.useLeftBrace(.leftBrace)
+        codeBlock.addStatement(
+          CodeBlockItemSyntax { codeBlockItem in
+            codeBlockItem.useItem(
+              Syntax(
+                /*
+                 guard !isKnownUniquelyReferenced(&storage) else {
+                   return
+                 }
+                 */
+                GuardStmtSyntax { guardStmt in
+                  guardStmt.useGuardKeyword(.guard)
+                  guardStmt.addCondition(
+                    ConditionElementSyntax { conditionElement in
+                      conditionElement.useCondition(
+                        Syntax(
+                          PrefixOperatorExprSyntax { prefixOperatorExpr in
+                            prefixOperatorExpr.useOperatorToken(.exclamationMark)
+                            prefixOperatorExpr.usePostfixExpression(
+                              ExprSyntax(
+                                FunctionCallExprSyntax { funcCallExpr in
+                                  funcCallExpr.useCalledExpression(
+                                    ExprSyntax(
+                                      IdentifierExprSyntax { identifierExpr in
+                                        identifierExpr.useIdentifier(.identifier("isKnownUniquelyReferenced"))
+                                      }
+                                    )
+                                  )
+                                  funcCallExpr.useLeftParen(.leftParen)
+                                  funcCallExpr.addArgument(
+                                    TupleExprElementSyntax { tupleExprElet in
+                                      tupleExprElet.useExpression(
+                                        ExprSyntax(
+                                          InOutExprSyntax { inoutExpr in
+                                            inoutExpr.useAmpersand(.prefixAmpersand)
+                                            inoutExpr.useExpression(
+                                              ExprSyntax(
+                                                IdentifierExprSyntax { identifierExpr in
+                                                  identifierExpr.useIdentifier(.identifier(storageVariableName))
+                                                }
+                                              )
+                                            )
+                                          }
+                                        )
+                                      )
+                                    }
+                                  )
+                                  funcCallExpr.useLeftParen(.rightParen)
+                                }
+                              )
+                            )
+                          }
+                        )
+                      )
+                    }
+                  )
+                  guardStmt.useElseKeyword(.else)
+                  guardStmt.useBody(
+                    CodeBlockSyntax { codeBlock in
+                      codeBlock.useLeftBrace(.leftParen)
+                      codeBlock.addStatement(
+                        CodeBlockItemSyntax { codeBlockItem in
+                          codeBlockItem.useItem(
+                            Syntax(
+                              ReturnStmtSyntax { returnStmt in
+                                returnStmt.useReturnKeyword(.return)
+                              }
+                            )
+                          )
+                        }
+                      )
+                      codeBlock.useRightBrace(.rightParen)
+                    }
+                  )
+                }
+              )
+            )
+            /*
+             self.storage = Storage(storage)
+             */
+            codeBlockItem.useItem(
+              Syntax(
+                SequenceExprSyntax { sequenceExpr in
+                  sequenceExpr.addElement(
+                    ExprSyntax(
+                      MemberAccessExprSyntax { memberAccess in
+                        memberAccess.useBase(
+                          ExprSyntax(
+                            IdentifierExprSyntax { identifier in
+                              identifier.useIdentifier(.`self`)
+                            }
+                          )
+                        )
+                        memberAccess.useDot(.period)
+                        memberAccess.useName(.identifier(storageVariableName))
+                      }
+                    )
+                  )
+                  sequenceExpr.addElement(
+                    ExprSyntax(
+                      AssignmentExprSyntax { `assignment` in
+                        `assignment`.useAssignToken(.equal)
+                      }
+                    )
+                  )
+                  sequenceExpr.addElement(
+                    ExprSyntax(
+                      FunctionCallExprSyntax { funcCallExpr in
+                        funcCallExpr.useCalledExpression(
+                          ExprSyntax(
+                            IdentifierExprSyntax { identifierExpr in
+                              identifierExpr.useIdentifier(.identifier(storageClassName))
+                            }
+                          )
+                        )
+                        funcCallExpr.useLeftParen(.leftParen)
+                        funcCallExpr.addArgument(
+                          TupleExprElementSyntax { tupleExprElet in
+                            tupleExprElet.useExpression(
+                              ExprSyntax(
+                                IdentifierExprSyntax { identifierExpr in
+                                  identifierExpr.useIdentifier(.identifier(storageVariableName))
+                                }
+                              )
+                            )
+                          }
+                        )
+                        funcCallExpr.useLeftParen(.rightParen)
+                      }
+                    )
+                  )
+                }
+              )
+            )
+          }
+        )
+        codeBlock.useRightBrace(.rightBrace)
+      }
+    )
+  }
+}
+
 private func makeStorageClassMemberwiseInitializer(storageNamesAndTypes: [String : TypeSyntax?], userTypeForStorageName: [String : TypeSyntax]) throws -> InitializerDeclSyntax {
   var resolvedStorageNameAndTypes = [String : TypeSyntax]()
   for (storageName, typeOrNil) in storageNamesAndTypes {
@@ -183,8 +336,8 @@ private func makeStorageClassMemberwiseInitializer(storageNamesAndTypes: [String
             CodeBlockItemSyntax { item in
               item.useItem(
                 Syntax(
-                  SequenceExprSyntax { exprs in
-                    exprs.addElement(
+                  SequenceExprSyntax { sequenceExpr in
+                    sequenceExpr.addElement(
                       ExprSyntax(
                         MemberAccessExprSyntax { memberAccess in
                           memberAccess.useBase(
@@ -199,14 +352,14 @@ private func makeStorageClassMemberwiseInitializer(storageNamesAndTypes: [String
                         }
                       )
                     )
-                    exprs.addElement(
+                    sequenceExpr.addElement(
                       ExprSyntax(
                         AssignmentExprSyntax { `assignment` in
                           `assignment`.useAssignToken(.equal)
                         }
                       )
                     )
-                    exprs.addElement(
+                    sequenceExpr.addElement(
                       ExprSyntax(
                         IdentifierExprSyntax { identifier in
                           identifier.useIdentifier(.identifier(storageName))
@@ -256,8 +409,8 @@ private func makeStorageClassCopyInitializer(storageClassName: String, storageNa
             CodeBlockItemSyntax { item in
               item.useItem(
                 Syntax(
-                  SequenceExprSyntax { exprs in
-                    exprs.addElement(
+                  SequenceExprSyntax { sequenceExpr in
+                    sequenceExpr.addElement(
                       ExprSyntax(
                         MemberAccessExprSyntax { memberAccess in
                           memberAccess.useBase(
@@ -272,14 +425,14 @@ private func makeStorageClassCopyInitializer(storageClassName: String, storageNa
                         }
                       )
                     )
-                    exprs.addElement(
+                    sequenceExpr.addElement(
                       ExprSyntax(
                         AssignmentExprSyntax { `assignment` in
                           `assignment`.useAssignToken(.equal)
                         }
                       )
                     )
-                    exprs.addElement(
+                    sequenceExpr.addElement(
                       ExprSyntax(
                         MemberAccessExprSyntax { memberAccess in
                           memberAccess.useBase(
