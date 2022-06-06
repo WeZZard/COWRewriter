@@ -77,8 +77,9 @@ private func makeCowStruct(
   struct: StructDeclSyntax,
   storageClass: ClassDeclSyntax,
   storageVariableName: String,
-  makeUniqueStorageFunctionName: String
+  storageUniquificationFunctionName: String
 ) -> StructDeclSyntax {
+  
   notImplemented()
 }
 
@@ -104,7 +105,7 @@ private func makeCowStruct(
 private func makeStorageDispatchedVariableDecls(
   storedPropertyVariableDecl: VariableDeclSyntax,
   storageVariableName: String,
-  storageUnificationFunctionName: String,
+  storageUniquificationFunctionName: String,
   resolvedStorageNameAndTypes: [String : TypeSyntax]
 ) -> [VariableDeclSyntax] {
   storedPropertyVariableDecl.bindings.map { binding -> VariableDeclSyntax in
@@ -201,7 +202,7 @@ private func makeStorageDispatchedVariableDecls(
                                           )
                                         )
                                         memberAccess.useDot(.period)
-                                        memberAccess.useName(.identifier(storageUnificationFunctionName))
+                                        memberAccess.useName(.identifier(storageUniquificationFunctionName))
                                       }
                                     )
                                   )
@@ -352,7 +353,7 @@ private func makeStorageClass(
   }
 }
 
-private func makeStorageUnificationFunctionDecl(
+private func makeStorageUniquificationFunctionDecl(
   functionName: String,
   storageClassName: String,
   storageVariableName: String
