@@ -71,100 +71,15 @@ private class COWRewriterConcrete: SyntaxRewriter {
   
 }
 
-private func rewriteStruct(
+// MARK: - Rewriting the struct
+
+private func makeCowStruct(
   struct: StructDeclSyntax,
   storageClass: ClassDeclSyntax,
+  storageVariableName: String,
   makeUniqueStorageFunctionName: String
 ) -> StructDeclSyntax {
   notImplemented()
-}
-
-enum StorageClassCreationError: Error {
-  
-  case noInferredTypeAndUserType(storageName: String)
-  
-}
-
-private func makeStorageClass(
-  structType: StructDeclSyntax,
-  className: String,
-  storedProperties: [VariableDeclSyntax],
-  initializers: [InitializerDeclSyntax],
-  userTypeForStorageName: [String : TypeSyntax]
-) throws -> ClassDeclSyntax {
-  func resolveStorageNameAndTypes(
-    for extractedStorageNameAndTypes: [String : TypeSyntax?],
-    with userTypeForStorageName: [String : TypeSyntax]
-  ) throws -> [String : TypeSyntax] {
-    var resolvedStorageNameAndTypes = [String : TypeSyntax]()
-    for (storageName, typeOrNil) in extractedStorageNameAndTypes {
-      let userTypeOrNil = userTypeForStorageName[storageName]
-      let resolvedTypeOrNil = typeOrNil ?? userTypeOrNil
-      guard let resolvedType = resolvedTypeOrNil else {
-        throw StorageClassCreationError.noInferredTypeAndUserType(storageName: storageName)
-      }
-      resolvedStorageNameAndTypes[storageName] = resolvedType
-    }
-    return resolvedStorageNameAndTypes
-  }
-  
-  let allStorageNamesAndTypes = Dictionary(
-    uniqueKeysWithValues: storedProperties.flatMap(\.allIdentifiersAndTypes)
-  )
-  
-  let resolvedStorageNameAndTypes = try resolveStorageNameAndTypes(
-    for: allStorageNamesAndTypes,
-    with: userTypeForStorageName
-  )
-  
-  let needsCreateMemberwiseInitializer = initializers.reduce(true) { partial, initializer in
-    partial && !initializer.isMemberwiseInitializer(storageNames: allStorageNamesAndTypes.keys)
-  }
-  
-  let memberwiseInitializer: InitializerDeclSyntax?
-  
-  if needsCreateMemberwiseInitializer {
-    memberwiseInitializer = makeStorageClassMemberwiseInitializerDecl(
-      resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
-    )
-  } else {
-    memberwiseInitializer = nil
-  }
-  
-  let copyInitializer = makeStorageClassCopyInitializer(
-    storageClassName: className,
-    storageNames: allStorageNamesAndTypes.keys
-  )
-  
-  return ClassDeclSyntax { classDecl in
-    classDecl.useIdentifier(.identifier(className))
-    classDecl.useMembers(
-      MemberDeclBlockSyntax { memberDeclBlock in
-        for eachStoredProperty in storedProperties {
-          memberDeclBlock.addMember(MemberDeclListItemSyntax { memberDeclListItem in
-            memberDeclListItem.useDecl(DeclSyntax(eachStoredProperty))
-          })
-        }
-        for eachInitializer in initializers {
-          memberDeclBlock.addMember(MemberDeclListItemSyntax { memberDeclListItem in
-            memberDeclListItem.useDecl(DeclSyntax(eachInitializer))
-          })
-        }
-        if let memberwiseInitializer = memberwiseInitializer {
-          memberDeclBlock.addMember(
-            MemberDeclListItemSyntax { memberDeclListItem in
-              memberDeclListItem.useDecl(DeclSyntax(memberwiseInitializer))
-            }
-          )
-        }
-        memberDeclBlock.addMember(
-          MemberDeclListItemSyntax { memberDeclListItem in
-            memberDeclListItem.useDecl(DeclSyntax(copyInitializer))
-          }
-        )
-      }
-    )
-  }
 }
 
 /// Make variable like
@@ -344,6 +259,96 @@ private func makeStorageDispatchedVariableDecls(
         }
       )
     }
+  }
+}
+
+// MARK: - Creating Storage Class
+
+enum StorageClassCreationError: Error {
+  
+  case noInferredTypeAndUserType(storageName: String)
+  
+}
+
+private func makeStorageClass(
+  structType: StructDeclSyntax,
+  className: String,
+  storedProperties: [VariableDeclSyntax],
+  initializers: [InitializerDeclSyntax],
+  userTypeForStorageName: [String : TypeSyntax]
+) throws -> ClassDeclSyntax {
+  func resolveStorageNameAndTypes(
+    for extractedStorageNameAndTypes: [String : TypeSyntax?],
+    with userTypeForStorageName: [String : TypeSyntax]
+  ) throws -> [String : TypeSyntax] {
+    var resolvedStorageNameAndTypes = [String : TypeSyntax]()
+    for (storageName, typeOrNil) in extractedStorageNameAndTypes {
+      let userTypeOrNil = userTypeForStorageName[storageName]
+      let resolvedTypeOrNil = typeOrNil ?? userTypeOrNil
+      guard let resolvedType = resolvedTypeOrNil else {
+        throw StorageClassCreationError.noInferredTypeAndUserType(storageName: storageName)
+      }
+      resolvedStorageNameAndTypes[storageName] = resolvedType
+    }
+    return resolvedStorageNameAndTypes
+  }
+  
+  let allStorageNamesAndTypes = Dictionary(
+    uniqueKeysWithValues: storedProperties.flatMap(\.allIdentifiersAndTypes)
+  )
+  
+  let resolvedStorageNameAndTypes = try resolveStorageNameAndTypes(
+    for: allStorageNamesAndTypes,
+    with: userTypeForStorageName
+  )
+  
+  let needsCreateMemberwiseInitializer = initializers.reduce(true) { partial, initializer in
+    partial && !initializer.isMemberwiseInitializer(storageNames: allStorageNamesAndTypes.keys)
+  }
+  
+  let memberwiseInitializer: InitializerDeclSyntax?
+  
+  if needsCreateMemberwiseInitializer {
+    memberwiseInitializer = makeStorageClassMemberwiseInitializerDecl(
+      resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
+    )
+  } else {
+    memberwiseInitializer = nil
+  }
+  
+  let copyInitializer = makeStorageClassCopyInitializer(
+    storageClassName: className,
+    storageNames: allStorageNamesAndTypes.keys
+  )
+  
+  return ClassDeclSyntax { classDecl in
+    classDecl.useIdentifier(.identifier(className))
+    classDecl.useMembers(
+      MemberDeclBlockSyntax { memberDeclBlock in
+        for eachStoredProperty in storedProperties {
+          memberDeclBlock.addMember(MemberDeclListItemSyntax { memberDeclListItem in
+            memberDeclListItem.useDecl(DeclSyntax(eachStoredProperty))
+          })
+        }
+        for eachInitializer in initializers {
+          memberDeclBlock.addMember(MemberDeclListItemSyntax { memberDeclListItem in
+            memberDeclListItem.useDecl(DeclSyntax(eachInitializer))
+          })
+        }
+        if let memberwiseInitializer = memberwiseInitializer {
+          memberDeclBlock.addMember(
+            MemberDeclListItemSyntax { memberDeclListItem in
+              memberDeclListItem.useDecl(DeclSyntax(memberwiseInitializer))
+            }
+          )
+        }
+        memberDeclBlock.addMember(
+          MemberDeclListItemSyntax { memberDeclListItem in
+            memberDeclListItem.useDecl(DeclSyntax(copyInitializer))
+          }
+        )
+      }
+    )
   }
 }
 
@@ -650,6 +655,8 @@ private func makeStorageClassCopyInitializer<StorageNames: Sequence>(storageClas
     )
   }
 }
+
+// MARK: - Utilities
 
 extension VariableDeclSyntax {
   
