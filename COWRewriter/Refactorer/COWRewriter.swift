@@ -54,9 +54,8 @@ class COWRewriter {
  6. Create a storage stored property in `struct`, say `storage`.
  7. Create a storage unique-ify function, say `makeUniquelyReferencedStorage`, in `struct`.
  8. Rewrite all the stored properties in `struct` (except the `storage`) with dispatch call to relative properties in `storage`
- 9. Copy all the initializers in `struct` to `Storage` (except the memberwise initializer)
- 10. Create the memberwrise initializer for `struct` if needed.
- 11. Rewrite all the initializers in `struct` with dispatch call to relative initializers in `Storage`
+ 9. Create the memberwrise initializer for `struct` if needed.
+ 10. Rewrite all the initializers in `struct` with dispatch call to relative initializers in `Storage`
  */
 
 private class COWRewriterConcrete: SyntaxRewriter {
@@ -72,6 +71,14 @@ private class COWRewriterConcrete: SyntaxRewriter {
   
 }
 
+private func rewriteStruct(
+  struct: StructDeclSyntax,
+  storageClass: ClassDeclSyntax,
+  makeUniqueStorageFunctionName: String
+) -> StructDeclSyntax {
+  notImplemented()
+}
+
 enum StorageClassCreationError: Error {
   
   case noInferredTypeAndUserType(storageName: String)
@@ -85,19 +92,40 @@ private func makeStorageClass(
   initializers: [InitializerDeclSyntax],
   userTypeForStorageName: [String : TypeSyntax]
 ) throws -> ClassDeclSyntax {
-  let allStorageNamesAndTypes = Dictionary(uniqueKeysWithValues: storedProperties.flatMap(\.allIdentifiersAndTypes))
-  let allStorageNamesSet = Set(Array(allStorageNamesAndTypes.keys))
+  func resolveStorageNameAndTypes(
+    for extractedStorageNameAndTypes: [String : TypeSyntax?],
+    with userTypeForStorageName: [String : TypeSyntax]
+  ) throws -> [String : TypeSyntax] {
+    var resolvedStorageNameAndTypes = [String : TypeSyntax]()
+    for (storageName, typeOrNil) in extractedStorageNameAndTypes {
+      let userTypeOrNil = userTypeForStorageName[storageName]
+      let resolvedTypeOrNil = typeOrNil ?? userTypeOrNil
+      guard let resolvedType = resolvedTypeOrNil else {
+        throw StorageClassCreationError.noInferredTypeAndUserType(storageName: storageName)
+      }
+      resolvedStorageNameAndTypes[storageName] = resolvedType
+    }
+    return resolvedStorageNameAndTypes
+  }
+  
+  let allStorageNamesAndTypes = Dictionary(
+    uniqueKeysWithValues: storedProperties.flatMap(\.allIdentifiersAndTypes)
+  )
+  
+  let resolvedStorageNameAndTypes = try resolveStorageNameAndTypes(
+    for: allStorageNamesAndTypes,
+    with: userTypeForStorageName
+  )
   
   let needsCreateMemberwiseInitializer = initializers.reduce(true) { partial, initializer in
-    partial && !initializer.isMemberwiseInitializer(storageNames: allStorageNamesSet)
+    partial && !initializer.isMemberwiseInitializer(storageNames: allStorageNamesAndTypes.keys)
   }
   
   let memberwiseInitializer: InitializerDeclSyntax?
   
   if needsCreateMemberwiseInitializer {
-    memberwiseInitializer = try makeStorageClassMemberwiseInitializer(
-      storageNamesAndTypes: allStorageNamesAndTypes,
-      userTypeForStorageName: userTypeForStorageName
+    memberwiseInitializer = makeStorageClassMemberwiseInitializerDecl(
+      resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
     )
   } else {
     memberwiseInitializer = nil
@@ -105,7 +133,7 @@ private func makeStorageClass(
   
   let copyInitializer = makeStorageClassCopyInitializer(
     storageClassName: className,
-    storageNamesAndTypes: allStorageNamesAndTypes
+    storageNames: allStorageNamesAndTypes.keys
   )
   
   return ClassDeclSyntax { classDecl in
@@ -139,15 +167,187 @@ private func makeStorageClass(
   }
 }
 
-private func rewriteStruct(
-  struct: StructDeclSyntax,
-  storageClass: ClassDeclSyntax,
-  makeUniqueStorageFunctionName: String
-) -> StructDeclSyntax {
-  notImplemented()
+/// Make variable like
+///
+/// ```
+/// var foo: Bar {
+///   _read {
+///     yield storage.foo
+///   }
+///   _modify {
+///     yield &storage.foo
+///   }
+///}
+/// ```
+///
+/// from
+///
+/// ```
+/// var foo: Bar
+/// ```
+///
+private func makeStorageDispatchedVariableDecls(
+  storedPropertyVariableDecl: VariableDeclSyntax,
+  storageVariableName: String,
+  storageUnificationFunctionName: String,
+  resolvedStorageNameAndTypes: [String : TypeSyntax]
+) -> [VariableDeclSyntax] {
+  storedPropertyVariableDecl.bindings.map { binding -> VariableDeclSyntax in
+    VariableDeclSyntax { variableDecl in
+      let identifierPattern = binding.pattern.as(IdentifierPatternSyntax.self)!
+      let storageName = identifierPattern.identifier.text
+      variableDecl.useLetOrVarKeyword(.var)
+      if let attributes = storedPropertyVariableDecl.attributes {
+        for each in attributes.storageDispatchedVariableAllowedAttributes {
+          variableDecl.addAttribute(each)
+        }
+      }
+      if let modifiers = storedPropertyVariableDecl.modifiers {
+        for each in modifiers.storageDispatchedVariableAllowedModifiers {
+          variableDecl.addModifier(each)
+        }
+      }
+      variableDecl.addBinding(
+        PatternBindingSyntax { patternBinding in
+          patternBinding.usePattern(binding.pattern)
+          patternBinding.useTypeAnnotation(
+            TypeAnnotationSyntax { typeAnnotation in
+              typeAnnotation.useType(resolvedStorageNameAndTypes[storageName]!)
+            }
+          )
+          patternBinding.useAccessor(
+            Syntax(
+              AccessorBlockSyntax { accessorBlock in
+                accessorBlock.useLeftBrace(.leftParen)
+                accessorBlock.addAccessor(
+                  AccessorDeclSyntax { accessor in
+                    accessor.useAccessorKind(.contextualKeyword("_read"))
+                    accessor.useBody(
+                      CodeBlockSyntax { codeBlock in
+                        codeBlock.useLeftBrace(.leftParen)
+                        codeBlock.addStatement(
+                          CodeBlockItemSyntax { codeBlockItem in
+                            codeBlockItem.useItem(
+                              Syntax(
+                                YieldStmtSyntax { yieldStmt in
+                                  yieldStmt.useYieldKeyword(.yield)
+                                  yieldStmt.useYields(
+                                    Syntax(
+                                      MemberAccessExprSyntax { memberAccess in
+                                        memberAccess.useBase(
+                                          ExprSyntax(
+                                            MemberAccessExprSyntax { memberAccess in
+                                              memberAccess.useBase(
+                                                ExprSyntax(
+                                                  IdentifierExprSyntax { identifierExpr in
+                                                    identifierExpr.useIdentifier(.`self`)
+                                                  }
+                                                )
+                                              )
+                                              memberAccess.useDot(.period)
+                                              memberAccess.useName(.identifier(storageVariableName))
+                                            }
+                                          )
+                                        )
+                                        memberAccess.useDot(.period)
+                                        memberAccess.useName(.identifier(storageName))
+                                      }
+                                    )
+                                  )
+                                }
+                              )
+                            )
+                          }
+                        )
+                        codeBlock.useRightBrace(.rightParen)
+                      }
+                    )
+                  }
+                )
+                accessorBlock.addAccessor(
+                  AccessorDeclSyntax { accessor in
+                    accessor.useAccessorKind(.contextualKeyword("_modify"))
+                    accessor.useBody(
+                      CodeBlockSyntax { codeBlock in
+                        codeBlock.useLeftBrace(.leftParen)
+                        codeBlock.addStatement(
+                          CodeBlockItemSyntax { codeBlockItem in
+                            codeBlockItem.useItem(
+                              Syntax(
+                                FunctionCallExprSyntax { funcCall in
+                                  funcCall.useCalledExpression(
+                                    ExprSyntax(
+                                      MemberAccessExprSyntax { memberAccess in
+                                        memberAccess.useBase(
+                                          ExprSyntax(
+                                            IdentifierExprSyntax { identifierExpr in
+                                              identifierExpr.useIdentifier(.`self`)
+                                            }
+                                          )
+                                        )
+                                        memberAccess.useDot(.period)
+                                        memberAccess.useName(.identifier(storageUnificationFunctionName))
+                                      }
+                                    )
+                                  )
+                                }
+                              )
+                            )
+                            codeBlockItem.useItem(
+                              Syntax(
+                                YieldStmtSyntax { yieldStmt in
+                                  yieldStmt.useYieldKeyword(.yield)
+                                  yieldStmt.useYields(
+                                    Syntax(
+                                      InOutExprSyntax { inOutExpr in
+                                        inOutExpr.useAmpersand(.prefixAmpersand)
+                                        inOutExpr.useExpression(
+                                          ExprSyntax(
+                                            MemberAccessExprSyntax { memberAccess in
+                                              memberAccess.useBase(
+                                                ExprSyntax(
+                                                  MemberAccessExprSyntax { memberAccess in
+                                                    memberAccess.useBase(
+                                                      ExprSyntax(
+                                                        IdentifierExprSyntax { identifierExpr in
+                                                          identifierExpr.useIdentifier(.`self`)
+                                                        }
+                                                      )
+                                                    )
+                                                    memberAccess.useDot(.period)
+                                                    memberAccess.useName(.identifier(storageVariableName))
+                                                  }
+                                                )
+                                              )
+                                              memberAccess.useDot(.period)
+                                              memberAccess.useName(.identifier(storageName))
+                                            }
+                                          )
+                                        )
+                                      }
+                                    )
+                                  )
+                                }
+                              )
+                            )
+                          }
+                        )
+                        codeBlock.useRightBrace(.rightParen)
+                      }
+                    )
+                  }
+                )
+                accessorBlock.useRightBrace(.rightParen)
+              }
+            )
+          )
+        }
+      )
+    }
+  }
 }
 
-private func makeStorageUnificationFunction(
+private func makeStorageUnificationFunctionDecl(
   functionName: String,
   storageClassName: String,
   storageVariableName: String
@@ -300,17 +500,9 @@ private func makeStorageUnificationFunction(
   }
 }
 
-private func makeStorageClassMemberwiseInitializer(storageNamesAndTypes: [String : TypeSyntax?], userTypeForStorageName: [String : TypeSyntax]) throws -> InitializerDeclSyntax {
-  var resolvedStorageNameAndTypes = [String : TypeSyntax]()
-  for (storageName, typeOrNil) in storageNamesAndTypes {
-    let userTypeOrNil = userTypeForStorageName[storageName]
-    let resolvedTypeOrNil = typeOrNil ?? userTypeOrNil
-    guard let resolvedType = resolvedTypeOrNil else {
-      throw StorageClassCreationError.noInferredTypeAndUserType(storageName: storageName)
-    }
-    resolvedStorageNameAndTypes[storageName] = resolvedType
-  }
-  
+private func makeStorageClassMemberwiseInitializerDecl(
+  resolvedStorageNameAndTypes: [String : TypeSyntax]
+) -> InitializerDeclSyntax {
   return InitializerDeclSyntax { initializer in
     initializer.useInitKeyword(.`init`)
     initializer.useParameters(
@@ -378,7 +570,7 @@ private func makeStorageClassMemberwiseInitializer(storageNamesAndTypes: [String
   }
 }
 
-private func makeStorageClassCopyInitializer(storageClassName: String, storageNamesAndTypes: [String : TypeSyntax?]) -> InitializerDeclSyntax {
+private func makeStorageClassCopyInitializer<StorageNames: Sequence>(storageClassName: String, storageNames: StorageNames) -> InitializerDeclSyntax where StorageNames.Element == String {
   return InitializerDeclSyntax { initializer in
     initializer.useInitKeyword(.`init`)
     initializer.useParameters(
@@ -404,7 +596,7 @@ private func makeStorageClassCopyInitializer(storageClassName: String, storageNa
     initializer.useBody(
       CodeBlockSyntax { codeBlock in
         codeBlock.useLeftBrace(.leftBrace)
-        for (storageName, _) in storageNamesAndTypes {
+        for eachStorageName in storageNames {
           codeBlock.addStatement(
             CodeBlockItemSyntax { item in
               item.useItem(
@@ -421,7 +613,7 @@ private func makeStorageClassCopyInitializer(storageClassName: String, storageNa
                             )
                           )
                           memberAccess.useDot(.period)
-                          memberAccess.useName(.identifier(storageName))
+                          memberAccess.useName(.identifier(eachStorageName))
                         }
                       )
                     )
@@ -443,7 +635,7 @@ private func makeStorageClassCopyInitializer(storageClassName: String, storageNa
                             )
                           )
                           memberAccess.useDot(.period)
-                          memberAccess.useName(.identifier(storageName))
+                          memberAccess.useName(.identifier(eachStorageName))
                         }
                       )
                     )
@@ -480,8 +672,31 @@ extension VariableDeclSyntax {
 
 extension InitializerDeclSyntax {
   
-  func isMemberwiseInitializer(storageNames: Set<String>) -> Bool {
+  func isMemberwiseInitializer<S: Sequence>(storageNames: S) -> Bool where S.Element == String {
     fatalError()
+  }
+  
+}
+
+
+extension AttributeListSyntax {
+  
+  fileprivate var storageDispatchedVariableAllowedAttributes: [Syntax] {
+    filter { syntax in
+      !syntax.is(CustomAttributeSyntax.self)
+    }
+  }
+  
+}
+
+
+
+extension ModifierListSyntax {
+  
+  fileprivate var storageDispatchedVariableAllowedModifiers: [DeclModifierSyntax] {
+    filter { syntax in
+      [.public, .private, .internal, .fileprivate].contains(syntax.name)
+    }
   }
   
 }
