@@ -97,7 +97,7 @@ struct RefactorRequestsConfigView: View {
               VStack(alignment: .leading) {
                 Text("\(item.letOrVar) \(item.name): ")
                 TextField(
-                  item.suggestedType ?? "Missing type",
+                  item.suggestedType?.description ?? "Missing type",
                   text: $item.userType
                 )
               }

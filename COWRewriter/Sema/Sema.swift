@@ -283,20 +283,16 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     
     let identifier: String
     
-    let startLocation: SourceLocation
-    
-    let endLocation: SourceLocation
+    let sourceRange: SourceRange
     
     init(
       parent: Scope,
       identifier: String,
-      startLocation: SourceLocation,
-      endLocation: SourceLocation
+      sourceRange: SourceRange
     ) {
       self._parent = parent
       self.identifier = identifier
-      self.startLocation = startLocation
-      self.endLocation = endLocation
+      self.sourceRange = sourceRange
     }
     
     override var parent: Scope? {
@@ -474,8 +470,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
       StructScope(
         parent: topScope(),
         identifier: node.identifier.text,
-        startLocation: node.startLocation(converter: slc),
-        endLocation: node.endLocation(converter: slc)
+        sourceRange: node.sourceRange(converter: slc)
       )
     )
     return super.visit(node)
@@ -544,8 +539,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     let decl = RefactorableDecl(
       treeID: treeID,
       identifier: scope.identifier,
-      startLocation: scope.startLocation,
-      endLocation: scope.endLocation,
+      sourceRange: scope.sourceRange,
       suggestedStorageClassName: "Storage",
       suggestedStorageVariableName: "storage",
       suggestedMakeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",

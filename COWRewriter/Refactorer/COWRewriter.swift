@@ -18,12 +18,21 @@ protocol COWRewriterInputContext: AnyObject {
   
 }
 
+enum COWRewriterError: Error {
+  
+  case noInferredTypeAndUserType(node: StructDeclSyntax, storageName: String)
+  
+}
+
 class COWRewriter {
   
   unowned let input: COWRewriterInputContext
   
+  private(set) var errors: [COWRewriterError]
+  
   init(input: COWRewriterInputContext) {
     self.input = input
+    self.errors = []
   }
   
   func execute(requests: [RefactorRequest]) -> Syntax {
@@ -64,600 +73,113 @@ private class COWRewriterConcrete: SyntaxRewriter {
   
   let requests: [RefactorRequest]
   
+  private(set) var errors: [COWRewriterError]
+  
   init(slc: SourceLocationConverter, requests: [RefactorRequest]) {
     self.slc = slc
     self.requests = requests
+    self.errors = []
   }
   
-}
-
-// MARK: - Rewriting the struct
-
-private func makeCowStruct(
-  struct: StructDeclSyntax,
-  storageClass: ClassDeclSyntax,
-  storageVariableName: String,
-  storageUniquificationFunctionName: String
-) -> StructDeclSyntax {
-  
-  notImplemented()
-}
-
-/// Make variable like
-///
-/// ```
-/// var foo: Bar {
-///   _read {
-///     yield storage.foo
-///   }
-///   _modify {
-///     yield &storage.foo
-///   }
-///}
-/// ```
-///
-/// from
-///
-/// ```
-/// var foo: Bar
-/// ```
-///
-private func makeStorageDispatchedVariableDecls(
-  storedPropertyVariableDecl: VariableDeclSyntax,
-  storageVariableName: String,
-  storageUniquificationFunctionName: String,
-  resolvedStorageNameAndTypes: [String : TypeSyntax]
-) -> [VariableDeclSyntax] {
-  storedPropertyVariableDecl.bindings.map { binding -> VariableDeclSyntax in
-    VariableDeclSyntax { variableDecl in
-      let identifierPattern = binding.pattern.as(IdentifierPatternSyntax.self)!
-      let storageName = identifierPattern.identifier.text
-      variableDecl.useLetOrVarKeyword(.var)
-      if let attributes = storedPropertyVariableDecl.attributes {
-        for each in attributes.storageDispatchedVariableAllowedAttributes {
-          variableDecl.addAttribute(each)
-        }
-      }
-      if let modifiers = storedPropertyVariableDecl.modifiers {
-        for each in modifiers.storageDispatchedVariableAllowedModifiers {
-          variableDecl.addModifier(each)
-        }
-      }
-      variableDecl.addBinding(
-        PatternBindingSyntax { patternBinding in
-          patternBinding.usePattern(binding.pattern)
-          patternBinding.useTypeAnnotation(
-            TypeAnnotationSyntax { typeAnnotation in
-              typeAnnotation.useType(resolvedStorageNameAndTypes[storageName]!)
-            }
-          )
-          patternBinding.useAccessor(
-            Syntax(
-              AccessorBlockSyntax { accessorBlock in
-                accessorBlock.useLeftBrace(.leftParen)
-                accessorBlock.addAccessor(
-                  AccessorDeclSyntax { accessor in
-                    accessor.useAccessorKind(.contextualKeyword("_read"))
-                    accessor.useBody(
-                      CodeBlockSyntax { codeBlock in
-                        codeBlock.useLeftBrace(.leftParen)
-                        codeBlock.addStatement(
-                          CodeBlockItemSyntax { codeBlockItem in
-                            codeBlockItem.useItem(
-                              Syntax(
-                                YieldStmtSyntax { yieldStmt in
-                                  yieldStmt.useYieldKeyword(.yield)
-                                  yieldStmt.useYields(
-                                    Syntax(
-                                      MemberAccessExprSyntax { memberAccess in
-                                        memberAccess.useBase(
-                                          ExprSyntax(
-                                            MemberAccessExprSyntax { memberAccess in
-                                              memberAccess.useBase(
-                                                ExprSyntax(
-                                                  IdentifierExprSyntax { identifierExpr in
-                                                    identifierExpr.useIdentifier(.`self`)
-                                                  }
-                                                )
-                                              )
-                                              memberAccess.useDot(.period)
-                                              memberAccess.useName(.identifier(storageVariableName))
-                                            }
-                                          )
-                                        )
-                                        memberAccess.useDot(.period)
-                                        memberAccess.useName(.identifier(storageName))
-                                      }
-                                    )
-                                  )
-                                }
-                              )
-                            )
-                          }
-                        )
-                        codeBlock.useRightBrace(.rightParen)
-                      }
-                    )
-                  }
-                )
-                accessorBlock.addAccessor(
-                  AccessorDeclSyntax { accessor in
-                    accessor.useAccessorKind(.contextualKeyword("_modify"))
-                    accessor.useBody(
-                      CodeBlockSyntax { codeBlock in
-                        codeBlock.useLeftBrace(.leftParen)
-                        codeBlock.addStatement(
-                          CodeBlockItemSyntax { codeBlockItem in
-                            codeBlockItem.useItem(
-                              Syntax(
-                                FunctionCallExprSyntax { funcCall in
-                                  funcCall.useCalledExpression(
-                                    ExprSyntax(
-                                      MemberAccessExprSyntax { memberAccess in
-                                        memberAccess.useBase(
-                                          ExprSyntax(
-                                            IdentifierExprSyntax { identifierExpr in
-                                              identifierExpr.useIdentifier(.`self`)
-                                            }
-                                          )
-                                        )
-                                        memberAccess.useDot(.period)
-                                        memberAccess.useName(.identifier(storageUniquificationFunctionName))
-                                      }
-                                    )
-                                  )
-                                }
-                              )
-                            )
-                            codeBlockItem.useItem(
-                              Syntax(
-                                YieldStmtSyntax { yieldStmt in
-                                  yieldStmt.useYieldKeyword(.yield)
-                                  yieldStmt.useYields(
-                                    Syntax(
-                                      InOutExprSyntax { inOutExpr in
-                                        inOutExpr.useAmpersand(.prefixAmpersand)
-                                        inOutExpr.useExpression(
-                                          ExprSyntax(
-                                            MemberAccessExprSyntax { memberAccess in
-                                              memberAccess.useBase(
-                                                ExprSyntax(
-                                                  MemberAccessExprSyntax { memberAccess in
-                                                    memberAccess.useBase(
-                                                      ExprSyntax(
-                                                        IdentifierExprSyntax { identifierExpr in
-                                                          identifierExpr.useIdentifier(.`self`)
-                                                        }
-                                                      )
-                                                    )
-                                                    memberAccess.useDot(.period)
-                                                    memberAccess.useName(.identifier(storageVariableName))
-                                                  }
-                                                )
-                                              )
-                                              memberAccess.useDot(.period)
-                                              memberAccess.useName(.identifier(storageName))
-                                            }
-                                          )
-                                        )
-                                      }
-                                    )
-                                  )
-                                }
-                              )
-                            )
-                          }
-                        )
-                        codeBlock.useRightBrace(.rightParen)
-                      }
-                    )
-                  }
-                )
-                accessorBlock.useRightBrace(.rightParen)
-              }
-            )
-          )
-        }
-      )
+  override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
+    guard let request = requests.firstRequest(for: node.sourceRange(converter: slc)) else {
+      return super.visit(node)
     }
-  }
-}
-
-// MARK: - Creating Storage Class
-
-enum StorageClassCreationError: Error {
-  
-  case noInferredTypeAndUserType(storageName: String)
-  
-}
-
-private func makeStorageClass(
-  structType: StructDeclSyntax,
-  className: String,
-  storedProperties: [VariableDeclSyntax],
-  initializers: [InitializerDeclSyntax],
-  userTypeForStorageName: [String : TypeSyntax]
-) throws -> ClassDeclSyntax {
-  func resolveStorageNameAndTypes(
-    for extractedStorageNameAndTypes: [String : TypeSyntax?],
-    with userTypeForStorageName: [String : TypeSyntax]
-  ) throws -> [String : TypeSyntax] {
-    var resolvedStorageNameAndTypes = [String : TypeSyntax]()
-    for (storageName, typeOrNil) in extractedStorageNameAndTypes {
-      let userTypeOrNil = userTypeForStorageName[storageName]
-      let resolvedTypeOrNil = typeOrNil ?? userTypeOrNil
-      guard let resolvedType = resolvedTypeOrNil else {
-        throw StorageClassCreationError.noInferredTypeAndUserType(storageName: storageName)
-      }
-      resolvedStorageNameAndTypes[storageName] = resolvedType
-    }
-    return resolvedStorageNameAndTypes
-  }
-  
-  let allStorageNamesAndTypes = Dictionary(
-    uniqueKeysWithValues: storedProperties.flatMap(\.allIdentifiersAndTypes)
-  )
-  
-  let resolvedStorageNameAndTypes = try resolveStorageNameAndTypes(
-    for: allStorageNamesAndTypes,
-    with: userTypeForStorageName
-  )
-  
-  let needsCreateMemberwiseInitializer = initializers.reduce(true) { partial, initializer in
-    partial && !initializer.isMemberwiseInitializer(storageNames: allStorageNamesAndTypes.keys)
-  }
-  
-  let memberwiseInitializer: InitializerDeclSyntax?
-  
-  if needsCreateMemberwiseInitializer {
-    memberwiseInitializer = makeStorageClassMemberwiseInitializerDecl(
+    
+    let resolvedStorageNameAndTypes = resolveStorageNameAndTypes(
+      for: node,
+      with: request.typedefs,
+      errors: &self.errors
+    )
+    
+    let storageClass = makeStorageClass(
+      structDecl: node,
+      className: request.storageClassName,
       resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
     )
-  } else {
-    memberwiseInitializer = nil
+    
+    let refactoredSyntax = makeCowStruct(
+      originalStructDecl: node,
+      storageClass: storageClass,
+      storageVariableName: request.storageVariableName,
+      storageUniquificationFunctionName: request.makeUniqueStorageFunctionName,
+      resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
+    )
+    
+    return DeclSyntax(refactoredSyntax)
   }
   
-  let copyInitializer = makeStorageClassCopyInitializer(
-    storageClassName: className,
-    storageNames: allStorageNamesAndTypes.keys
+}
+
+private func resolveStorageNameAndTypes(
+  for structDecl: StructDeclSyntax,
+  with userTypeForStorageName: [String : TypeSyntax],
+  errors: inout [COWRewriterError]
+) -> [String : TypeSyntax] {
+  let storedVariables = structDecl.members.members.storedVariables
+  let storageNamesAndTypes = Dictionary(
+    uniqueKeysWithValues: storedVariables.flatMap(\.allIdentifiersAndTypes)
   )
   
-  return ClassDeclSyntax { classDecl in
-    classDecl.useIdentifier(.identifier(className))
-    classDecl.useMembers(
-      MemberDeclBlockSyntax { memberDeclBlock in
-        for eachStoredProperty in storedProperties {
-          memberDeclBlock.addMember(MemberDeclListItemSyntax { memberDeclListItem in
-            memberDeclListItem.useDecl(DeclSyntax(eachStoredProperty))
-          })
-        }
-        for eachInitializer in initializers {
-          memberDeclBlock.addMember(MemberDeclListItemSyntax { memberDeclListItem in
-            memberDeclListItem.useDecl(DeclSyntax(eachInitializer))
-          })
-        }
-        if let memberwiseInitializer = memberwiseInitializer {
-          memberDeclBlock.addMember(
-            MemberDeclListItemSyntax { memberDeclListItem in
-              memberDeclListItem.useDecl(DeclSyntax(memberwiseInitializer))
-            }
-          )
-        }
-        memberDeclBlock.addMember(
-          MemberDeclListItemSyntax { memberDeclListItem in
-            memberDeclListItem.useDecl(DeclSyntax(copyInitializer))
-          }
-        )
-      }
-    )
+  var resolvedStorageNameAndTypes = [String : TypeSyntax]()
+  for (storageName, typeOrNil) in storageNamesAndTypes {
+    let userTypeOrNil = userTypeForStorageName[storageName]
+    let resolvedTypeOrNil = typeOrNil ?? userTypeOrNil
+    guard let resolvedType = resolvedTypeOrNil else {
+      errors.append(COWRewriterError.noInferredTypeAndUserType(node: structDecl, storageName: storageName))
+      continue
+    }
+    resolvedStorageNameAndTypes[storageName] = resolvedType
   }
+  return resolvedStorageNameAndTypes
 }
 
-private func makeStorageUniquificationFunctionDecl(
-  functionName: String,
-  storageClassName: String,
-  storageVariableName: String
-) -> FunctionDeclSyntax {
-  FunctionDeclSyntax { funcDecl in
-    funcDecl.useFuncKeyword(.func)
-    funcDecl.useIdentifier(.identifier(functionName))
-    funcDecl.useSignature(FunctionSignatureSyntax({ _ in }))
-    funcDecl.useBody(
-      CodeBlockSyntax { codeBlock in
-        codeBlock.useLeftBrace(.leftBrace)
-        codeBlock.addStatement(
-          CodeBlockItemSyntax { codeBlockItem in
-            codeBlockItem.useItem(
-              Syntax(
-                /*
-                 guard !isKnownUniquelyReferenced(&storage) else {
-                   return
-                 }
-                 */
-                GuardStmtSyntax { guardStmt in
-                  guardStmt.useGuardKeyword(.guard)
-                  guardStmt.addCondition(
-                    ConditionElementSyntax { conditionElement in
-                      conditionElement.useCondition(
-                        Syntax(
-                          PrefixOperatorExprSyntax { prefixOperatorExpr in
-                            prefixOperatorExpr.useOperatorToken(.exclamationMark)
-                            prefixOperatorExpr.usePostfixExpression(
-                              ExprSyntax(
-                                FunctionCallExprSyntax { funcCallExpr in
-                                  funcCallExpr.useCalledExpression(
-                                    ExprSyntax(
-                                      IdentifierExprSyntax { identifierExpr in
-                                        identifierExpr.useIdentifier(.identifier("isKnownUniquelyReferenced"))
-                                      }
-                                    )
-                                  )
-                                  funcCallExpr.useLeftParen(.leftParen)
-                                  funcCallExpr.addArgument(
-                                    TupleExprElementSyntax { tupleExprElet in
-                                      tupleExprElet.useExpression(
-                                        ExprSyntax(
-                                          InOutExprSyntax { inoutExpr in
-                                            inoutExpr.useAmpersand(.prefixAmpersand)
-                                            inoutExpr.useExpression(
-                                              ExprSyntax(
-                                                IdentifierExprSyntax { identifierExpr in
-                                                  identifierExpr.useIdentifier(.identifier(storageVariableName))
-                                                }
-                                              )
-                                            )
-                                          }
-                                        )
-                                      )
-                                    }
-                                  )
-                                  funcCallExpr.useLeftParen(.rightParen)
-                                }
-                              )
-                            )
-                          }
-                        )
-                      )
-                    }
-                  )
-                  guardStmt.useElseKeyword(.else)
-                  guardStmt.useBody(
-                    CodeBlockSyntax { codeBlock in
-                      codeBlock.useLeftBrace(.leftParen)
-                      codeBlock.addStatement(
-                        CodeBlockItemSyntax { codeBlockItem in
-                          codeBlockItem.useItem(
-                            Syntax(
-                              ReturnStmtSyntax { returnStmt in
-                                returnStmt.useReturnKeyword(.return)
-                              }
-                            )
-                          )
-                        }
-                      )
-                      codeBlock.useRightBrace(.rightParen)
-                    }
-                  )
-                }
-              )
-            )
-            /*
-             self.storage = Storage(storage)
-             */
-            codeBlockItem.useItem(
-              Syntax(
-                SequenceExprSyntax { sequenceExpr in
-                  sequenceExpr.addElement(
-                    ExprSyntax(
-                      MemberAccessExprSyntax { memberAccess in
-                        memberAccess.useBase(
-                          ExprSyntax(
-                            IdentifierExprSyntax { identifier in
-                              identifier.useIdentifier(.`self`)
-                            }
-                          )
-                        )
-                        memberAccess.useDot(.period)
-                        memberAccess.useName(.identifier(storageVariableName))
-                      }
-                    )
-                  )
-                  sequenceExpr.addElement(
-                    ExprSyntax(
-                      AssignmentExprSyntax { `assignment` in
-                        `assignment`.useAssignToken(.equal)
-                      }
-                    )
-                  )
-                  sequenceExpr.addElement(
-                    ExprSyntax(
-                      FunctionCallExprSyntax { funcCallExpr in
-                        funcCallExpr.useCalledExpression(
-                          ExprSyntax(
-                            IdentifierExprSyntax { identifierExpr in
-                              identifierExpr.useIdentifier(.identifier(storageClassName))
-                            }
-                          )
-                        )
-                        funcCallExpr.useLeftParen(.leftParen)
-                        funcCallExpr.addArgument(
-                          TupleExprElementSyntax { tupleExprElet in
-                            tupleExprElet.useExpression(
-                              ExprSyntax(
-                                IdentifierExprSyntax { identifierExpr in
-                                  identifierExpr.useIdentifier(.identifier(storageVariableName))
-                                }
-                              )
-                            )
-                          }
-                        )
-                        funcCallExpr.useLeftParen(.rightParen)
-                      }
-                    )
-                  )
-                }
-              )
-            )
-          }
-        )
-        codeBlock.useRightBrace(.rightBrace)
-      }
-    )
+extension Sequence where Element == RefactorRequest {
+  
+  func firstRequest(for sourceRange: SourceRange) -> RefactorRequest? {
+    for each in self where each.decl.sourceRange == sourceRange {
+      return each
+    }
+    return nil
   }
+  
 }
 
-private func makeStorageClassMemberwiseInitializerDecl(
-  resolvedStorageNameAndTypes: [String : TypeSyntax]
-) -> InitializerDeclSyntax {
-  return InitializerDeclSyntax { initializer in
-    initializer.useInitKeyword(.`init`)
-    initializer.useParameters(
-      ParameterClauseSyntax { parameters in
-        parameters.useLeftParen(.leftParen)
-        for (storageName, resolvedStorageType) in resolvedStorageNameAndTypes {
-          parameters.addParameter(
-            FunctionParameterSyntax { parameter in
-              parameter.useFirstName(.identifier(storageName))
-              parameter.useColon(.colon)
-              parameter.useType(resolvedStorageType)
-            }
-          )
-        }
-        parameters.useRightParen(.rightParen)
+extension MemberDeclListSyntax {
+  
+  var storedVariables: [VariableDeclSyntax] {
+    compactMap { member -> VariableDeclSyntax? in
+      guard let variableDecl = member.decl.as(VariableDeclSyntax.self),
+            variableDecl.isStored else {
+        return nil
       }
-    )
-    initializer.useBody(
-      CodeBlockSyntax { codeBlock in
-        codeBlock.useLeftBrace(.leftBrace)
-        for (storageName, _) in resolvedStorageNameAndTypes {
-          codeBlock.addStatement(
-            CodeBlockItemSyntax { item in
-              item.useItem(
-                Syntax(
-                  SequenceExprSyntax { sequenceExpr in
-                    sequenceExpr.addElement(
-                      ExprSyntax(
-                        MemberAccessExprSyntax { memberAccess in
-                          memberAccess.useBase(
-                            ExprSyntax(
-                              IdentifierExprSyntax { identifier in
-                                identifier.useIdentifier(.`self`)
-                              }
-                            )
-                          )
-                          memberAccess.useDot(.period)
-                          memberAccess.useName(.identifier(storageName))
-                        }
-                      )
-                    )
-                    sequenceExpr.addElement(
-                      ExprSyntax(
-                        AssignmentExprSyntax { `assignment` in
-                          `assignment`.useAssignToken(.equal)
-                        }
-                      )
-                    )
-                    sequenceExpr.addElement(
-                      ExprSyntax(
-                        IdentifierExprSyntax { identifier in
-                          identifier.useIdentifier(.identifier(storageName))
-                        }
-                      )
-                    )
-                  }
-                )
-              )
-            }
-          )
-        }
-        codeBlock.useRightBrace(.leftBrace)
-      }
-    )
+      return variableDecl
+    }
   }
+  
+  var initializers: [InitializerDeclSyntax] {
+    compactMap { member -> InitializerDeclSyntax? in
+      guard let initDecl = member.decl.as(InitializerDeclSyntax.self) else {
+        return nil
+      }
+      return initDecl
+    }
+  }
+  
 }
 
-private func makeStorageClassCopyInitializer<StorageNames: Sequence>(storageClassName: String, storageNames: StorageNames) -> InitializerDeclSyntax where StorageNames.Element == String {
-  return InitializerDeclSyntax { initializer in
-    initializer.useInitKeyword(.`init`)
-    initializer.useParameters(
-      ParameterClauseSyntax { parameters in
-        parameters.useLeftParen(.leftParen)
-        parameters.addParameter(
-          FunctionParameterSyntax { parameter in
-            parameter.useFirstName(.wildcard)
-            parameter.useSecondName(.identifier("storage"))
-            parameter.useColon(.colon)
-            parameter.useType(
-              TypeSyntax(
-                SimpleTypeIdentifierSyntax { simpleIdType in
-                  simpleIdType.useName(.identifier(storageClassName))
-                }
-              )
-            )
-          }
-        )
-        parameters.useRightParen(.rightParen)
-      }
-    )
-    initializer.useBody(
-      CodeBlockSyntax { codeBlock in
-        codeBlock.useLeftBrace(.leftBrace)
-        for eachStorageName in storageNames {
-          codeBlock.addStatement(
-            CodeBlockItemSyntax { item in
-              item.useItem(
-                Syntax(
-                  SequenceExprSyntax { sequenceExpr in
-                    sequenceExpr.addElement(
-                      ExprSyntax(
-                        MemberAccessExprSyntax { memberAccess in
-                          memberAccess.useBase(
-                            ExprSyntax(
-                              IdentifierExprSyntax { identifier in
-                                identifier.useIdentifier(.`self`)
-                              }
-                            )
-                          )
-                          memberAccess.useDot(.period)
-                          memberAccess.useName(.identifier(eachStorageName))
-                        }
-                      )
-                    )
-                    sequenceExpr.addElement(
-                      ExprSyntax(
-                        AssignmentExprSyntax { `assignment` in
-                          `assignment`.useAssignToken(.equal)
-                        }
-                      )
-                    )
-                    sequenceExpr.addElement(
-                      ExprSyntax(
-                        MemberAccessExprSyntax { memberAccess in
-                          memberAccess.useBase(
-                            ExprSyntax(
-                              IdentifierExprSyntax { identifier in
-                                identifier.useIdentifier(.identifier("storage"))
-                              }
-                            )
-                          )
-                          memberAccess.useDot(.period)
-                          memberAccess.useName(.identifier(eachStorageName))
-                        }
-                      )
-                    )
-                  }
-                )
-              )
-            }
-          )
-        }
-        codeBlock.useRightBrace(.leftBrace)
-      }
-    )
+extension VariableDeclSyntax {
+  
+  var isStored: Bool {
+    if letOrVarKeyword == .let {
+      return true
+    }
+    return bindings.reduce(true) { (partial, binding) in
+      partial && binding.accessor == nil
+    }
   }
+  
 }
-
-// MARK: - Utilities
 
 extension VariableDeclSyntax {
   
@@ -677,34 +199,3 @@ extension VariableDeclSyntax {
   
 }
 
-
-extension InitializerDeclSyntax {
-  
-  func isMemberwiseInitializer<S: Sequence>(storageNames: S) -> Bool where S.Element == String {
-    fatalError()
-  }
-  
-}
-
-
-extension AttributeListSyntax {
-  
-  fileprivate var storageDispatchedVariableAllowedAttributes: [Syntax] {
-    filter { syntax in
-      !syntax.is(CustomAttributeSyntax.self)
-    }
-  }
-  
-}
-
-
-
-extension ModifierListSyntax {
-  
-  fileprivate var storageDispatchedVariableAllowedModifiers: [DeclModifierSyntax] {
-    filter { syntax in
-      [.public, .private, .internal, .fileprivate].contains(syntax.name)
-    }
-  }
-  
-}

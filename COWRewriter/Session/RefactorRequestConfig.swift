@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftSyntax
+import SwiftSyntaxParser
 
 struct RefactorRequestConfig: Identifiable {
   
@@ -17,7 +19,7 @@ struct RefactorRequestConfig: Identifiable {
     
     let name: String
     
-    let suggestedType: String?
+    let suggestedType: TypeSyntax?
     
     var userType: String
     
@@ -65,12 +67,27 @@ struct RefactorRequestConfig: Identifiable {
   }
   
   var request: RefactorRequest {
-    RefactorRequest(
+    func makeTypeSyntax(_ userType: String?) -> TypeSyntax? {
+      guard let userType = userType else {
+        return nil
+      }
+      guard let tree = try? SyntaxParser.parse(source: userType) else {
+        return nil
+      }
+      return tree.statements.first?.item.as(TypeSyntax.self)
+    }
+    func makeTypedef(_ binding: UninferrablePatternBindingItem) -> (String, TypeSyntax)? {
+      guard let type = makeTypeSyntax(binding.userType) ?? binding.suggestedType else {
+        return nil
+      }
+      return (binding.name, type)
+    }
+    return RefactorRequest(
       decl: decl,
       storageClassName: userStorageClassName.isEmpty ? suggestedStorageClassName : userStorageClassName,
       storageVariableName: userStorageVariableName.isEmpty ? suggestedStorageVariableName : userStorageVariableName,
       makeUniqueStorageFunctionName: userMakeUniqueStorageFunctionName.isEmpty ? suggestedMakeUniqueStorageFunctionName : userMakeUniqueStorageFunctionName,
-      typedefs: Dictionary(uniqueKeysWithValues: uninferrablePatternBindings.map({($0.id, $0.userType.isEmpty ? ($0.suggestedType ?? "") : $0.userType)}))
+      typedefs: Dictionary(uniqueKeysWithValues: uninferrablePatternBindings.compactMap(makeTypedef))
     )
   }
 

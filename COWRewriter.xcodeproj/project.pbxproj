@@ -42,6 +42,8 @@
 		9C768FAB284BB9F500FE835D /* ConditionalKeyboardShorcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FAA284BB9F500FE835D /* ConditionalKeyboardShorcut.swift */; };
 		9C768FB0284BD2EC00FE835D /* RefactorCandidate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FAF284BD2EC00FE835D /* RefactorCandidate.swift */; };
 		9C768FB2284BD30200FE835D /* RefactorRequestConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FB1284BD30200FE835D /* RefactorRequestConfig.swift */; };
+		9C768FB5284E267400FE835D /* MakeStorageClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FB4284E267400FE835D /* MakeStorageClass.swift */; };
+		9C768FB7284E270700FE835D /* MakeCowStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FB6284E270700FE835D /* MakeCowStruct.swift */; };
 		9C7EA675283E98C0003E9194 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA674283E98C0003E9194 /* Sema.swift */; };
 		9C7EA677283E9E39003E9194 /* COWRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA676283E9E39003E9194 /* COWRewriter.swift */; };
 		9CC615D42843B7FF0027DF5B /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC615D32843B7FF0027DF5B /* Scope.swift */; };
@@ -104,6 +106,8 @@
 		9C768FAA284BB9F500FE835D /* ConditionalKeyboardShorcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionalKeyboardShorcut.swift; sourceTree = "<group>"; };
 		9C768FAF284BD2EC00FE835D /* RefactorCandidate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefactorCandidate.swift; sourceTree = "<group>"; };
 		9C768FB1284BD30200FE835D /* RefactorRequestConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefactorRequestConfig.swift; sourceTree = "<group>"; };
+		9C768FB4284E267400FE835D /* MakeStorageClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeStorageClass.swift; sourceTree = "<group>"; };
+		9C768FB6284E270700FE835D /* MakeCowStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeCowStruct.swift; sourceTree = "<group>"; };
 		9C7EA674283E98C0003E9194 /* Sema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
 		9C7EA676283E9E39003E9194 /* COWRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriter.swift; sourceTree = "<group>"; };
 		9CC615D32843B7FF0027DF5B /* Scope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
@@ -221,6 +225,8 @@
 			children = (
 				9C2C13DA283E743D00978CD9 /* Refactorer.swift */,
 				9C7EA676283E9E39003E9194 /* COWRewriter.swift */,
+				9C768FB4284E267400FE835D /* MakeStorageClass.swift */,
+				9C768FB6284E270700FE835D /* MakeCowStruct.swift */,
 			);
 			path = Refactorer;
 			sourceTree = "<group>";
@@ -432,6 +438,7 @@
 			files = (
 				9C768F9D284B2EC300FE835D /* PrettyPrinter.swift in Sources */,
 				9C768FA9284BA13C00FE835D /* ImportErrorMessageView.swift in Sources */,
+				9C768FB7284E270700FE835D /* MakeCowStruct.swift in Sources */,
 				9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */,
 				9C46396D284685DF0020FCEF /* RuntimeErrorHandling.swift in Sources */,
 				9C0809CB2838BA2F00ACDCE9 /* ContentView.swift in Sources */,
@@ -449,6 +456,7 @@
 				9C768FA1284B838A00FE835D /* SessionManager.swift in Sources */,
 				9C4639712849A9760020FCEF /* NameLookUpRequest.swift in Sources */,
 				9C6CE49F2849F0210068B319 /* ScopeBuilder.swift in Sources */,
+				9C768FB5284E267400FE835D /* MakeStorageClass.swift in Sources */,
 				9C46396F28487C900020FCEF /* Transaction.swift in Sources */,
 				9C080A012838E70100ACDCE9 /* RefactorRequestsConfigView.swift in Sources */,
 				9C6CE49D2849EFF10068B319 /* Name.swift in Sources */,

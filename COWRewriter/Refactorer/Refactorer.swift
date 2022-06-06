@@ -15,9 +15,7 @@ struct RefactorableDecl: Hashable {
   
   let identifier: String
   
-  let startLocation: SourceLocation
-  
-  let endLocation: SourceLocation
+  let sourceRange: SourceRange
   
   let suggestedStorageClassName: String
   
@@ -46,7 +44,7 @@ struct UninferrablePatternBinding: Hashable {
   
   let endLocation: SourceLocation
   
-  let maybeType: String?
+  let maybeType: TypeSyntax?
   
 }
 
@@ -60,7 +58,7 @@ struct RefactorRequest: Equatable {
   
   let makeUniqueStorageFunctionName: String
   
-  let typedefs: [UInt : String]
+  let typedefs: [String : TypeSyntax]
   
 }
 
@@ -141,7 +139,7 @@ final class Refactorer: Equatable {
       
       func rewriter(_ sender: COWRewriter, shouldRewriteDeclFrom startLocation: SourceLocation, to endLocation: SourceLocation) -> Bool {
         refactorableDecls.contains { each in
-          each.startLocation == startLocation && each.endLocation == endLocation
+          each.sourceRange.start == startLocation && each.sourceRange.end == endLocation
         }
       }
       
