@@ -17,7 +17,13 @@ func makeCowStruct(
 ) -> StructDeclSyntax {
   originalStructDecl.withMembers(
     MemberDeclBlockSyntax { memberDeclBlock in
-      memberDeclBlock.useLeftBrace(.leftParen)
+      memberDeclBlock.useLeftBrace(.leftBrace)
+      // class Storage { ... }
+      memberDeclBlock.addMember(
+        MemberDeclListItemSyntax { item in
+          item.useDecl(DeclSyntax(storageClass))
+        }
+      )
       // var storage: Storage
       memberDeclBlock.addMember(
         MemberDeclListItemSyntax { item in
@@ -41,6 +47,7 @@ func makeCowStruct(
                     )
                     patternBinding.useTypeAnnotation(
                       TypeAnnotationSyntax { typeAnnotation in
+                        typeAnnotation.useColon(.colon)
                         typeAnnotation.useType(
                           TypeSyntax(
                             SimpleTypeIdentifierSyntax { simpleTypeId in
@@ -84,7 +91,7 @@ func makeCowStruct(
           storedPropertyVariableDecl: eachStoredVariable,
           storageVariableName: storageVariableName,
           storageUniquificationFunctionName: storageUniquificationFunctionName,
-          resolvedStorageNameAndTypes: [:])
+          resolvedStorageNameAndTypes: resolvedStorageNameAndTypes)
         for dispatchedVariableDecl in dispatchedVariableDecls {
           memberDeclBlock.addMember(
             MemberDeclListItemSyntax { item in
@@ -132,7 +139,7 @@ func makeCowStruct(
         }
         memberDeclBlock.addMember(eachMember)
       }
-      memberDeclBlock.useRightBrace(.rightParen)
+      memberDeclBlock.useRightBrace(.rightBrace)
     }
   )
 }
@@ -182,19 +189,20 @@ private func makeStorageDispatchedVariableDecls(
           patternBinding.usePattern(binding.pattern)
           patternBinding.useTypeAnnotation(
             TypeAnnotationSyntax { typeAnnotation in
+              typeAnnotation.useColon(.colon)
               typeAnnotation.useType(resolvedStorageNameAndTypes[storageName]!)
             }
           )
           patternBinding.useAccessor(
             Syntax(
               AccessorBlockSyntax { accessorBlock in
-                accessorBlock.useLeftBrace(.leftParen)
+                accessorBlock.useLeftBrace(.leftBrace)
                 accessorBlock.addAccessor(
                   AccessorDeclSyntax { accessor in
                     accessor.useAccessorKind(.contextualKeyword("_read"))
                     accessor.useBody(
                       CodeBlockSyntax { codeBlock in
-                        codeBlock.useLeftBrace(.leftParen)
+                        codeBlock.useLeftBrace(.leftBrace)
                         codeBlock.addStatement(
                           CodeBlockItemSyntax { codeBlockItem in
                             codeBlockItem.useItem(
@@ -229,7 +237,7 @@ private func makeStorageDispatchedVariableDecls(
                             )
                           }
                         )
-                        codeBlock.useRightBrace(.rightParen)
+                        codeBlock.useRightBrace(.rightBrace)
                       }
                     )
                   }
@@ -239,7 +247,7 @@ private func makeStorageDispatchedVariableDecls(
                     accessor.useAccessorKind(.contextualKeyword("_modify"))
                     accessor.useBody(
                       CodeBlockSyntax { codeBlock in
-                        codeBlock.useLeftBrace(.leftParen)
+                        codeBlock.useLeftBrace(.leftBrace)
                         codeBlock.addStatement(
                           CodeBlockItemSyntax { codeBlockItem in
                             codeBlockItem.useItem(
@@ -302,12 +310,12 @@ private func makeStorageDispatchedVariableDecls(
                             )
                           }
                         )
-                        codeBlock.useRightBrace(.rightParen)
+                        codeBlock.useRightBrace(.rightBrace)
                       }
                     )
                   }
                 )
-                accessorBlock.useRightBrace(.rightParen)
+                accessorBlock.useRightBrace(.rightBrace)
               }
             )
           )
@@ -325,7 +333,28 @@ private func makeStorageUniquificationFunctionDecl(
   FunctionDeclSyntax { funcDecl in
     funcDecl.useFuncKeyword(.func)
     funcDecl.useIdentifier(.identifier(functionName))
-    funcDecl.useSignature(FunctionSignatureSyntax({ _ in }))
+    funcDecl.useSignature(
+      FunctionSignatureSyntax { functionSignature in
+        functionSignature.useInput(
+          ParameterClauseSyntax { parameterClause in
+            parameterClause.useLeftParen(.leftParen)
+            parameterClause.useRightParen(.rightParen)
+          }
+        )
+        functionSignature.useOutput(
+          ReturnClauseSyntax { returnCaluse in
+            returnCaluse.useArrow(.arrow)
+            returnCaluse.useReturnType(
+              TypeSyntax(
+                SimpleTypeIdentifierSyntax { simpleTypeId in
+                  simpleTypeId.useName(.identifier("Void"))
+                }
+              )
+            )
+          }
+        )
+      }
+    )
     funcDecl.useBody(
       CodeBlockSyntax { codeBlock in
         codeBlock.useLeftBrace(.leftBrace)
@@ -387,7 +416,7 @@ private func makeStorageUniquificationFunctionDecl(
                   guardStmt.useElseKeyword(.else)
                   guardStmt.useBody(
                     CodeBlockSyntax { codeBlock in
-                      codeBlock.useLeftBrace(.leftParen)
+                      codeBlock.useLeftBrace(.leftBrace)
                       codeBlock.addStatement(
                         CodeBlockItemSyntax { codeBlockItem in
                           codeBlockItem.useItem(
@@ -399,7 +428,7 @@ private func makeStorageUniquificationFunctionDecl(
                           )
                         }
                       )
-                      codeBlock.useRightBrace(.rightParen)
+                      codeBlock.useRightBrace(.rightBrace)
                     }
                   )
                 }
@@ -455,7 +484,7 @@ private func makeStorageUniquificationFunctionDecl(
                             )
                           }
                         )
-                        funcCallExpr.useLeftParen(.rightParen)
+                        funcCallExpr.useRightParen(.rightParen)
                       }
                     )
                   )
@@ -557,7 +586,7 @@ private func makeStructMemberwiseInitializerDecl(
             )
           }
         )
-        codeBlock.useRightBrace(.leftBrace)
+        codeBlock.useRightBrace(.rightBrace)
       }
     )
   }
@@ -633,7 +662,7 @@ private func makeStructDispatchedInitializerDecl(
           )
         }
       )
-      codeBlock.useRightBrace(.leftBrace)
+      codeBlock.useRightBrace(.rightBrace)
     }
   )
 }

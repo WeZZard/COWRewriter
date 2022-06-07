@@ -130,7 +130,7 @@ private func makeStorageClassMemberwiseInitializerDecl(
             }
           )
         }
-        codeBlock.useRightBrace(.leftBrace)
+        codeBlock.useRightBrace(.rightBrace)
       }
     )
   }
@@ -214,7 +214,7 @@ private func makeStorageClassCopyInitializer<StorageNames: Sequence>(
             }
           )
         }
-        codeBlock.useRightBrace(.leftBrace)
+        codeBlock.useRightBrace(.rightBrace)
       }
     )
   }
