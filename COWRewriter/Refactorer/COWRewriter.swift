@@ -7,6 +7,7 @@
 
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import Collections
 
 protocol COWRewriterInputContext: AnyObject {
   
@@ -115,13 +116,13 @@ private func resolveStorageNameAndTypes(
   for structDecl: StructDeclSyntax,
   with userTypeForStorageName: [String : TypeSyntax],
   errors: inout [COWRewriterError]
-) -> [String : TypeSyntax] {
+) -> OrderedDictionary<String, TypeSyntax> {
   let storedVariables = structDecl.members.members.storedVariables
   let storageNamesAndTypes = Dictionary(
     uniqueKeysWithValues: storedVariables.flatMap(\.allIdentifiersAndTypes)
   )
   
-  var resolvedStorageNameAndTypes = [String : TypeSyntax]()
+  var resolvedStorageNameAndTypes = OrderedDictionary<String, TypeSyntax>()
   for (storageName, typeOrNil) in storageNamesAndTypes {
     let userTypeOrNil = userTypeForStorageName[storageName]
     let resolvedTypeOrNil = typeOrNil ?? userTypeOrNil

@@ -7,13 +7,14 @@
 
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import Collections
 
 func makeCowStruct(
   originalStructDecl: StructDeclSyntax,
   storageClass: ClassDeclSyntax,
   storageVariableName: String,
   storageUniquificationFunctionName: String,
-  resolvedStorageNameAndTypes: [String : TypeSyntax]
+  resolvedStorageNameAndTypes: OrderedDictionary<String, TypeSyntax>
 ) -> StructDeclSyntax {
   originalStructDecl.withMembers(
     MemberDeclBlockSyntax { memberDeclBlock in
@@ -167,7 +168,7 @@ private func makeStorageDispatchedVariableDecls(
   storedPropertyVariableDecl: VariableDeclSyntax,
   storageVariableName: String,
   storageUniquificationFunctionName: String,
-  resolvedStorageNameAndTypes: [String : TypeSyntax]
+  resolvedStorageNameAndTypes: OrderedDictionary<String, TypeSyntax>
 ) -> [VariableDeclSyntax] {
   storedPropertyVariableDecl.bindings.map { binding -> VariableDeclSyntax in
     VariableDeclSyntax { variableDecl in
@@ -268,9 +269,15 @@ private func makeStorageDispatchedVariableDecls(
                                       }
                                     )
                                   )
+                                  funcCall.useLeftParen(.leftParen)
+                                  funcCall.useRightParen(.rightParen)
                                 }
                               )
                             )
+                          }
+                        )
+                        codeBlock.addStatement(
+                          CodeBlockItemSyntax { codeBlockItem in
                             codeBlockItem.useItem(
                               Syntax(
                                 YieldStmtSyntax { yieldStmt in
@@ -332,6 +339,16 @@ private func makeStorageUniquificationFunctionDecl(
 ) -> FunctionDeclSyntax {
   FunctionDeclSyntax { funcDecl in
     funcDecl.useFuncKeyword(.func)
+    funcDecl.addModifier(
+      DeclModifierSyntax { declModifierSyntax in
+        declModifierSyntax.useName(.private)
+      }
+    )
+    funcDecl.addModifier(
+      DeclModifierSyntax { declModifierSyntax in
+        declModifierSyntax.useName(.contextualKeyword("mutating"))
+      }
+    )
     funcDecl.useIdentifier(.identifier(functionName))
     funcDecl.useSignature(
       FunctionSignatureSyntax { functionSignature in
@@ -404,7 +421,7 @@ private func makeStorageUniquificationFunctionDecl(
                                       )
                                     }
                                   )
-                                  funcCallExpr.useLeftParen(.rightParen)
+                                  funcCallExpr.useRightParen(.rightParen)
                                 }
                               )
                             )
@@ -434,9 +451,13 @@ private func makeStorageUniquificationFunctionDecl(
                 }
               )
             )
-            /*
-             self.storage = Storage(storage)
-             */
+          }
+        )
+        /*
+         self.storage = Storage(storage)
+         */
+        codeBlock.addStatement(
+          CodeBlockItemSyntax { codeBlockItem in
             codeBlockItem.useItem(
               Syntax(
                 SequenceExprSyntax { sequenceExpr in
@@ -502,19 +523,22 @@ private func makeStorageUniquificationFunctionDecl(
 private func makeStructMemberwiseInitializerDecl(
   storageClassName: String,
   storageVariableName: String,
-  resolvedStorageNameAndTypes: [String : TypeSyntax]
+  resolvedStorageNameAndTypes: OrderedDictionary<String, TypeSyntax>
 ) -> InitializerDeclSyntax {
   return InitializerDeclSyntax { initializer in
     initializer.useInitKeyword(.`init`)
     initializer.useParameters(
       ParameterClauseSyntax { parameters in
         parameters.useLeftParen(.leftParen)
-        for (storageName, resolvedStorageType) in resolvedStorageNameAndTypes {
+        for (index, (storageName, resolvedStorageType)) in resolvedStorageNameAndTypes.enumerated() {
           parameters.addParameter(
             FunctionParameterSyntax { parameter in
               parameter.useFirstName(.identifier(storageName))
               parameter.useColon(.colon)
               parameter.useType(resolvedStorageType)
+              if index + 1 < resolvedStorageNameAndTypes.count {
+                parameter.useTrailingComma(.comma)
+              }
             }
           )
         }
@@ -562,7 +586,7 @@ private func makeStructMemberwiseInitializerDecl(
                           )
                         )
                         funcCall.useLeftParen(.leftParen)
-                        for (storageName, _) in resolvedStorageNameAndTypes {
+                        for (index, (storageName, _)) in resolvedStorageNameAndTypes.enumerated() {
                           funcCall.addArgument(
                             TupleExprElementSyntax { tupleExprElet in
                               tupleExprElet.useLabel(.identifier(storageName))
@@ -574,6 +598,9 @@ private func makeStructMemberwiseInitializerDecl(
                                   }
                                 )
                               )
+                              if index + 1 < resolvedStorageNameAndTypes.count {
+                                tupleExprElet.useTrailingComma(.comma)
+                              }
                             }
                           )
                         }
@@ -638,7 +665,7 @@ private func makeStructDispatchedInitializerDecl(
                         )
                       )
                       funcCall.useLeftParen(.leftParen)
-                      for parameter in originalInitializer.parameters.parameterList {
+                      for (index, parameter) in originalInitializer.parameters.parameterList.enumerated() {
                         funcCall.addArgument(
                           TupleExprElementSyntax { tupleExprElet in
                             tupleExprElet.useLabel(parameter.firstName!)
@@ -650,6 +677,9 @@ private func makeStructDispatchedInitializerDecl(
                                 }
                               )
                             )
+                            if index + 1 < originalInitializer.parameters.parameterList.count {
+                              tupleExprElet.useTrailingComma(.comma)
+                            }
                           }
                         )
                       }

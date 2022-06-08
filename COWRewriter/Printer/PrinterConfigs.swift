@@ -29,9 +29,9 @@ struct PrinterConfigs: Equatable {
   var indentWidth: Int
   
   init() {
-    indentationMode = .tab
+    indentationMode = .space
     tabWidth = 2
-    indentWidth = 2
+    indentWidth = 4
   }
   
 }

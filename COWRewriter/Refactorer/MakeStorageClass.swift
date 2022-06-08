@@ -7,11 +7,12 @@
 
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import Collections
 
 func makeStorageClass(
   structDecl: StructDeclSyntax,
   className: String,
-  resolvedStorageNameAndTypes: [String : TypeSyntax]
+  resolvedStorageNameAndTypes: OrderedDictionary<String, TypeSyntax>
 ) -> ClassDeclSyntax {
   let storedVariables = structDecl.members.members.storedVariables
   let initializers = structDecl.members.members.initializers
@@ -36,6 +37,11 @@ func makeStorageClass(
   )
   
   return ClassDeclSyntax { classDecl in
+    classDecl.addModifier(
+      DeclModifierSyntax { declModifierSyntax in
+        declModifierSyntax.useName(.private)
+      }
+    )
     classDecl.useClassOrActorKeyword(.class)
     classDecl.useIdentifier(.identifier(className))
     classDecl.useMembers(
@@ -70,19 +76,22 @@ func makeStorageClass(
 }
 
 private func makeStorageClassMemberwiseInitializerDecl(
-  resolvedStorageNameAndTypes: [String : TypeSyntax]
+  resolvedStorageNameAndTypes: OrderedDictionary<String, TypeSyntax>
 ) -> InitializerDeclSyntax {
   return InitializerDeclSyntax { initializer in
     initializer.useInitKeyword(.`init`)
     initializer.useParameters(
       ParameterClauseSyntax { parameters in
         parameters.useLeftParen(.leftParen)
-        for (storageName, resolvedStorageType) in resolvedStorageNameAndTypes {
+        for (index, (storageName, resolvedStorageType)) in resolvedStorageNameAndTypes.enumerated() {
           parameters.addParameter(
             FunctionParameterSyntax { parameter in
               parameter.useFirstName(.identifier(storageName))
               parameter.useColon(.colon)
               parameter.useType(resolvedStorageType)
+              if index + 1 < resolvedStorageNameAndTypes.count {
+                parameter.useTrailingComma(.comma)
+              }
             }
           )
         }
