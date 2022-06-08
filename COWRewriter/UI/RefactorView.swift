@@ -21,6 +21,7 @@ struct RefactorView: View {
       candidates: $session.candidates,
       selectedCandidates: $session.selectedCandidates,
       refactorRequestConfigs: $session.refactorRequestConfigs,
+      printerConfigs: $session.printerConfigs,
       contentsPreview: $session.contentsPreview
     )
     BottomToolbar(

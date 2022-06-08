@@ -673,7 +673,18 @@ private func makeStructDispatchedInitializerDecl(
 extension InitializerDeclSyntax {
   
   func isMemberwiseInitializer<S: Sequence>(storageNames: S) -> Bool where S.Element == String {
-    fatalError()
+    let parameterNames = parameters.parameterList.compactMap { parameter -> String? in
+      guard let name = (parameter.secondName ?? parameter.firstName) else {
+        return nil
+      }
+      
+      guard case let .identifier(text) = name.tokenKind else {
+        return nil
+      }
+      
+      return text
+    }
+    return Set(parameterNames) == Set(storageNames)
   }
   
 }

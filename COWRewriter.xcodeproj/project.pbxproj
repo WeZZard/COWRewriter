@@ -46,6 +46,9 @@
 		9C768FB7284E270700FE835D /* MakeCowStruct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FB6284E270700FE835D /* MakeCowStruct.swift */; };
 		9C7EA675283E98C0003E9194 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA674283E98C0003E9194 /* Sema.swift */; };
 		9C7EA677283E9E39003E9194 /* COWRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C7EA676283E9E39003E9194 /* COWRewriter.swift */; };
+		9C971C1D285065F60026ACA0 /* PrinterConfigs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C971C1C285065F60026ACA0 /* PrinterConfigs.swift */; };
+		9C971C20285072AE0026ACA0 /* SwiftFormat in Frameworks */ = {isa = PBXBuildFile; productRef = 9C971C1F285072AE0026ACA0 /* SwiftFormat */; };
+		9C971C22285072AE0026ACA0 /* SwiftFormatConfiguration in Frameworks */ = {isa = PBXBuildFile; productRef = 9C971C21285072AE0026ACA0 /* SwiftFormatConfiguration */; };
 		9CC615D42843B7FF0027DF5B /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC615D32843B7FF0027DF5B /* Scope.swift */; };
 		9CDEE1EE283F4147005C3A4F /* SemaTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */; };
 		9CDEE1F0283FACB9005C3A4F /* SemaTypeInferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */; };
@@ -110,6 +113,7 @@
 		9C768FB6284E270700FE835D /* MakeCowStruct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MakeCowStruct.swift; sourceTree = "<group>"; };
 		9C7EA674283E98C0003E9194 /* Sema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
 		9C7EA676283E9E39003E9194 /* COWRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriter.swift; sourceTree = "<group>"; };
+		9C971C1C285065F60026ACA0 /* PrinterConfigs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrinterConfigs.swift; sourceTree = "<group>"; };
 		9CC615D32843B7FF0027DF5B /* Scope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
 		9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaTestsBase.swift; sourceTree = "<group>"; };
 		9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaTypeInferTests.swift; sourceTree = "<group>"; };
@@ -122,7 +126,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				9C0809FB2838C53200ACDCE9 /* SwiftSyntaxParser in Frameworks */,
+				9C971C20285072AE0026ACA0 /* SwiftFormat in Frameworks */,
 				9C0809F72838C53200ACDCE9 /* SwiftSyntax in Frameworks */,
+				9C971C22285072AE0026ACA0 /* SwiftFormatConfiguration in Frameworks */,
 				9C0809F92838C53200ACDCE9 /* SwiftSyntaxBuilder in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -286,6 +292,7 @@
 				9C768FA2284B83B800FE835D /* Session.swift */,
 				9C768FAF284BD2EC00FE835D /* RefactorCandidate.swift */,
 				9C768FB1284BD30200FE835D /* RefactorRequestConfig.swift */,
+				9C971C1C285065F60026ACA0 /* PrinterConfigs.swift */,
 			);
 			path = Session;
 			sourceTree = "<group>";
@@ -318,6 +325,8 @@
 				9C0809F62838C53200ACDCE9 /* SwiftSyntax */,
 				9C0809F82838C53200ACDCE9 /* SwiftSyntaxBuilder */,
 				9C0809FA2838C53200ACDCE9 /* SwiftSyntaxParser */,
+				9C971C1F285072AE0026ACA0 /* SwiftFormat */,
+				9C971C21285072AE0026ACA0 /* SwiftFormatConfiguration */,
 			);
 			productName = COWRewriter;
 			productReference = 9C0809C52838BA2F00ACDCE9 /* COWRewriter.app */;
@@ -393,6 +402,7 @@
 			mainGroup = 9C0809BC2838BA2F00ACDCE9;
 			packageReferences = (
 				9C0809F52838C53200ACDCE9 /* XCRemoteSwiftPackageReference "swift-syntax" */,
+				9C971C1E285072AE0026ACA0 /* XCRemoteSwiftPackageReference "swift-format" */,
 			);
 			productRefGroup = 9C0809C62838BA2F00ACDCE9 /* Products */;
 			projectDirPath = "";
@@ -462,6 +472,7 @@
 				9C6CE49D2849EFF10068B319 /* Name.swift in Sources */,
 				9C768F9F284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift in Sources */,
 				9C768FB0284BD2EC00FE835D /* RefactorCandidate.swift in Sources */,
+				9C971C1D285065F60026ACA0 /* PrinterConfigs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -796,6 +807,14 @@
 				version = 0.50600.1;
 			};
 		};
+		9C971C1E285072AE0026ACA0 /* XCRemoteSwiftPackageReference "swift-format" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-format";
+			requirement = {
+				kind = exactVersion;
+				version = 0.50600.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -813,6 +832,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9C0809F52838C53200ACDCE9 /* XCRemoteSwiftPackageReference "swift-syntax" */;
 			productName = SwiftSyntaxParser;
+		};
+		9C971C1F285072AE0026ACA0 /* SwiftFormat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C971C1E285072AE0026ACA0 /* XCRemoteSwiftPackageReference "swift-format" */;
+			productName = SwiftFormat;
+		};
+		9C971C21285072AE0026ACA0 /* SwiftFormatConfiguration */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C971C1E285072AE0026ACA0 /* XCRemoteSwiftPackageReference "swift-format" */;
+			productName = SwiftFormatConfiguration;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

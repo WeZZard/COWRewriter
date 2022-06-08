@@ -30,6 +30,9 @@ class Session: ObservableObject, BottomToolbarActions {
   @Published
   var refactorRequests: [RefactorRequest]
   
+  @Published
+  var printerConfigs: PrinterConfigs
+  
   private let refactorer: Refactorer
   
   private let printer: PrettyPrinter
@@ -44,6 +47,7 @@ class Session: ObservableObject, BottomToolbarActions {
     self.refactorRequests = []
     self.contentsPreview = ""
     self.refactorer = try Refactorer(url: fileUrl)
+    self.printerConfigs = PrinterConfigs()
     self.printer = PrettyPrinter()
     self.disposables = []
     setUp()

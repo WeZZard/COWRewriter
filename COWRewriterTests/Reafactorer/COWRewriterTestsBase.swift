@@ -53,6 +53,7 @@ class COWRewriterTestsBase: XCTestCase {
         RefactorRequest(
           decl: $0,
           storageClassName: "Storage",
+          storageVariableName: "storage",
           makeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",
           typedefs: [:]
         )

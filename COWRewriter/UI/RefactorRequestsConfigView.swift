@@ -19,10 +19,16 @@ struct RefactorRequestsConfigView: View {
   var refactorRequestConfigs: [RefactorRequestConfig]
   
   @Binding
+  var printerConfigs: PrinterConfigs
+  
+  @Binding
   var contentsPreview: String
   
   @State
   private var highlightedDeclID: UUID? = nil
+  
+  @State
+  private var showPreviewOptions: Bool = false
   
   var body: some View {
     HSplitView {
@@ -113,16 +119,72 @@ struct RefactorRequestsConfigView: View {
   @ViewBuilder
   private var refactorPreviewView: some View {
     VStack {
-      ColumnLabel {
-        Text("Preview")
-          .font(.system(.callout))
+      HStack {
+        ColumnLabel {
+          Text("Preview")
+            .font(.system(.callout))
+        }
+        Spacer()
+        Toggle("Options", isOn: $showPreviewOptions.animation())
+          .toggleStyle(.button)
       }
       .padding(8)
-      TextEditor(text: .constant(contentsPreview))
-        .frame(maxWidth: .infinity)
-        .font(Font.system(.body).monospaced())
-        .lineLimit(nil)
-        .border(Color.secondary)
+      VStack {
+        if showPreviewOptions {
+          previewOptionsView
+            .transition(.opacity.combined(with: .move(edge: .top)))
+        }
+        TextEditor(text: .constant(contentsPreview))
+          .frame(maxWidth: .infinity)
+          .font(Font.system(.body).monospaced())
+          .lineLimit(nil)
+          .border(Color.secondary)
+      }.clipped()
+    }
+  }
+  
+  @ViewBuilder
+  private var previewOptionsView: some View {
+    VStack(alignment: .leading) {
+      Picker("Prefer Indent Using: ", selection: $printerConfigs.indentationMode) {
+        ForEach(PrinterConfigs.IndentationMode.allCases, id: \.self) { eachCase in
+          Text(eachCase.displayName)
+        }
+      }
+      HStack {
+        Text("Tab Width: ")
+        Stepper(value: $printerConfigs.tabWidth, in: 1...(.max)) {
+          TextField(
+            "",
+            text: Binding {
+              String(printerConfigs.tabWidth)
+            } set: { newValue in
+              guard let newIntValue = Int(newValue) else {
+                return
+              }
+              printerConfigs.tabWidth = newIntValue
+            }
+          ).frame(maxWidth: 20)
+        }
+        Text("spaces")
+      }
+      HStack {
+        Text("Indent Width: ")
+        Stepper(value: $printerConfigs.indentWidth, in: 1...(.max)) {
+          TextField(
+            "",
+            text: Binding {
+              String(printerConfigs.indentWidth)
+            } set: { newValue in
+              guard let newIntValue = Int(newValue) else {
+                return
+              }
+              printerConfigs.indentWidth = newIntValue
+            }
+          ).frame(maxWidth: 20)
+        }
+        Text("spaces")
+      }
     }
   }
   
