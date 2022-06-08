@@ -35,7 +35,7 @@ class Session: ObservableObject, BottomToolbarActions {
   
   private let refactorer: Refactorer
   
-  private let printer: PrettyPrinter
+  private let printer: Printer
   
   private var disposables: Set<AnyCancellable>
   
@@ -47,8 +47,9 @@ class Session: ObservableObject, BottomToolbarActions {
     self.refactorRequests = []
     self.contentsPreview = ""
     self.refactorer = try Refactorer(url: fileUrl)
-    self.printerConfigs = PrinterConfigs()
-    self.printer = PrettyPrinter()
+    let printer = Printer()
+    self.printerConfigs = printer.configs
+    self.printer = printer
     self.disposables = []
     setUp()
   }
@@ -70,8 +71,15 @@ class Session: ObservableObject, BottomToolbarActions {
       }
       .assign(to: &$refactorRequests)
     
-    $refactorRequests.receive(on: DispatchQueue.main)
+    $refactorRequests.combineLatest($printerConfigs)
+      .receive(on: DispatchQueue.main)
       .sink(receiveValue: updateRefactorResults)
+      .store(in: &disposables)
+    
+    $printerConfigs
+      .sink { configs in
+        self.printer.configs = configs
+      }
       .store(in: &disposables)
     
     Task {
@@ -79,12 +87,18 @@ class Session: ObservableObject, BottomToolbarActions {
       await updateCandidates(refactorableDecls.map(RefactorCandidate.init))
     }
     
-    updateRefactorResults(refactorRequests)
+    updateRefactorResults(refactorRequests, printerConfigs)
   }
   
-  private func updateRefactorResults(_ requests: [RefactorRequest]) {
+  private func updateRefactorResults(
+    _ requests: [RefactorRequest],
+    _ config: PrinterConfigs
+  ) {
     Task {
-      let contents = printer.print(await refactorer.refactor(refactorRequests))
+      let contents = printer.print(
+        syntax: await refactorer.refactor(refactorRequests),
+        url: fileUrl
+      )
       await updateContentsPreview(contents)
     }
   }
@@ -117,12 +131,15 @@ class Session: ObservableObject, BottomToolbarActions {
   func copy() async {
     let contents = await refactorer.refactor(refactorRequests)
     NSPasteboard.general.clearContents()
-    NSPasteboard.general.setString(printer.print(contents), forType: .string)
+    NSPasteboard.general.setString(
+      printer.print(syntax: contents, url: fileUrl),
+      forType: .string
+    )
   }
   
   func saveAs(url: URL) async throws {
     let syntax = await refactorer.refactor(refactorRequests)
-    let text = printer.print(syntax)
+    let text = printer.print(syntax: syntax, url: fileUrl)
     try text.data(using: .utf8)?.write(to: url)
   }
   

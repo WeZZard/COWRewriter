@@ -68,7 +68,7 @@ final class Refactorer: Equatable {
   
   private let file: String?
   
-  private let tree: Syntax
+  private let tree: SourceFileSyntax
   
   private let slc: SourceLocationConverter
   
@@ -85,7 +85,7 @@ final class Refactorer: Equatable {
         
         let refactorer: Refactorer
         
-        var tree: Syntax
+        var tree: SourceFileSyntax
         
         let treeID: UInt
         
@@ -117,13 +117,13 @@ final class Refactorer: Equatable {
   }
   
   @inlinable
-  func refactor(_ requests: [RefactorRequest]) async -> Syntax {
+  func refactor(_ requests: [RefactorRequest]) async -> SourceFileSyntax {
     
     class Context: COWRewriterInputContext {
       
       let file: String?
       
-      var tree: Syntax
+      var tree: SourceFileSyntax
       
       let slc: SourceLocationConverter
       
@@ -154,7 +154,7 @@ final class Refactorer: Equatable {
   init(target: Target, file: String, tree: SourceFileSyntax) {
     self.target = target
     self.file = file
-    self.tree = Syntax(tree)
+    self.tree = tree
     self.slc = SourceLocationConverter(file: file, tree: tree)
     self._refactorableDecls_ = nil
     self.treeID = UInt.random(in: .min...(.max))

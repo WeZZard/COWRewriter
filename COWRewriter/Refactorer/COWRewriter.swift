@@ -12,7 +12,7 @@ protocol COWRewriterInputContext: AnyObject {
   
   var file: String? { get }
   
-  var tree: Syntax { get }
+  var tree: SourceFileSyntax { get }
   
   var slc: SourceLocationConverter { get }
   
@@ -35,9 +35,9 @@ class COWRewriter {
     self.errors = []
   }
   
-  func execute(requests: [RefactorRequest]) -> Syntax {
+  func execute(requests: [RefactorRequest]) -> SourceFileSyntax {
     let concrete = COWRewriterConcrete(slc: input.slc, requests: requests)
-    return concrete.visit(input.tree)
+    return SourceFileSyntax(concrete.visit(input.tree)) ?? input.tree
   }
   
 }

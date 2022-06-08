@@ -36,9 +36,11 @@ func makeStorageClass(
   )
   
   return ClassDeclSyntax { classDecl in
+    classDecl.useClassOrActorKeyword(.class)
     classDecl.useIdentifier(.identifier(className))
     classDecl.useMembers(
       MemberDeclBlockSyntax { memberDeclBlock in
+        memberDeclBlock.useLeftBrace(.leftBrace)
         for eachStoredProperty in storedVariables {
           memberDeclBlock.addMember(MemberDeclListItemSyntax { memberDeclListItem in
             memberDeclListItem.useDecl(DeclSyntax(eachStoredProperty))
@@ -61,6 +63,7 @@ func makeStorageClass(
             memberDeclListItem.useDecl(DeclSyntax(copyInitializer))
           }
         )
+        memberDeclBlock.useRightBrace(.rightBrace)
       }
     )
   }

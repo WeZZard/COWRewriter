@@ -28,7 +28,7 @@ enum Target {
 
 protocol SemaInputting: AnyObject {
   
-  var tree: Syntax { get }
+  var tree: SourceFileSyntax { get }
   
   var treeID: UInt { get }
   
@@ -39,7 +39,7 @@ protocol SemaInputting: AnyObject {
 
 protocol SemaOutputting: AnyObject {
   
-  var tree: Syntax { get set }
+  var tree: SourceFileSyntax { get set }
   
   var refactorableDecls: [RefactorableDecl] { get set }
   
@@ -413,7 +413,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
   
   let treeID: UInt
   
-  let tree: Syntax
+  let tree: SourceFileSyntax
   
   let slc: SourceLocationConverter
   
@@ -445,7 +445,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     return unsafeDowncast(popped, to: T.self)
   }
   
-  init(treeID: UInt, tree: Syntax, slc: SourceLocationConverter) {
+  init(treeID: UInt, tree: SourceFileSyntax, slc: SourceLocationConverter) {
     self.treeID = treeID
     self.tree = tree
     self.slc = slc

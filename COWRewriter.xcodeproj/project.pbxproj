@@ -32,7 +32,7 @@
 		9C4639752849C5890020FCEF /* ScopeTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4639742849C5890020FCEF /* ScopeTestsBase.swift */; };
 		9C6CE49D2849EFF10068B319 /* Name.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6CE49C2849EFF10068B319 /* Name.swift */; };
 		9C6CE49F2849F0210068B319 /* ScopeBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6CE49E2849F0210068B319 /* ScopeBuilder.swift */; };
-		9C768F9D284B2EC300FE835D /* PrettyPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768F9C284B2EC300FE835D /* PrettyPrinter.swift */; };
+		9C768F9D284B2EC300FE835D /* Printer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768F9C284B2EC300FE835D /* Printer.swift */; };
 		9C768F9F284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */; };
 		9C768FA1284B838A00FE835D /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FA0284B838A00FE835D /* SessionManager.swift */; };
 		9C768FA3284B83B800FE835D /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FA2284B83B800FE835D /* Session.swift */; };
@@ -99,7 +99,7 @@
 		9C4639742849C5890020FCEF /* ScopeTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeTestsBase.swift; sourceTree = "<group>"; };
 		9C6CE49C2849EFF10068B319 /* Name.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Name.swift; sourceTree = "<group>"; };
 		9C6CE49E2849F0210068B319 /* ScopeBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeBuilder.swift; sourceTree = "<group>"; };
-		9C768F9C284B2EC300FE835D /* PrettyPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrettyPrinter.swift; sourceTree = "<group>"; };
+		9C768F9C284B2EC300FE835D /* Printer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Printer.swift; sourceTree = "<group>"; };
 		9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Stdlib+COWRewriterAdditions.swift"; sourceTree = "<group>"; };
 		9C768FA0284B838A00FE835D /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		9C768FA2284B83B800FE835D /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
@@ -177,7 +177,7 @@
 				9C768FAE284BD21900FE835D /* Session */,
 				9C6CE4982849EEF80068B319 /* Sema */,
 				9C6CE4992849EF010068B319 /* Refactorer */,
-				9C768FB3284BDC3A00FE835D /* PrettryPrinter */,
+				9C768FB3284BDC3A00FE835D /* Printer */,
 				9C6CE49B2849EF1D0068B319 /* Utilities */,
 				9C0809CC2838BA3000ACDCE9 /* Assets.xcassets */,
 				9C0809D12838BA3000ACDCE9 /* COWRewriter.entitlements */,
@@ -292,17 +292,17 @@
 				9C768FA2284B83B800FE835D /* Session.swift */,
 				9C768FAF284BD2EC00FE835D /* RefactorCandidate.swift */,
 				9C768FB1284BD30200FE835D /* RefactorRequestConfig.swift */,
-				9C971C1C285065F60026ACA0 /* PrinterConfigs.swift */,
 			);
 			path = Session;
 			sourceTree = "<group>";
 		};
-		9C768FB3284BDC3A00FE835D /* PrettryPrinter */ = {
+		9C768FB3284BDC3A00FE835D /* Printer */ = {
 			isa = PBXGroup;
 			children = (
-				9C768F9C284B2EC300FE835D /* PrettyPrinter.swift */,
+				9C971C1C285065F60026ACA0 /* PrinterConfigs.swift */,
+				9C768F9C284B2EC300FE835D /* Printer.swift */,
 			);
-			path = PrettryPrinter;
+			path = Printer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -446,7 +446,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9C768F9D284B2EC300FE835D /* PrettyPrinter.swift in Sources */,
+				9C768F9D284B2EC300FE835D /* Printer.swift in Sources */,
 				9C768FA9284BA13C00FE835D /* ImportErrorMessageView.swift in Sources */,
 				9C768FB7284E270700FE835D /* MakeCowStruct.swift in Sources */,
 				9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */,
