@@ -17,6 +17,8 @@ struct RefactorableDecl: Hashable {
   
   let sourceRange: SourceRange
   
+  let namingSuggestions: [NamingKey : String]
+  
   let unresolvedSemantics: [UnresolvedSemantics]
   
 }
@@ -27,6 +29,7 @@ enum UnresolvedSemantics: Hashable {
   
   case typeAnnotation(TypeAnnotationIssue)
   
+  @inlinable
   var treeID: UInt {
     switch self {
     case let .name(issue):            return issue.treeID
@@ -34,21 +37,16 @@ enum UnresolvedSemantics: Hashable {
     }
   }
   
-  var startLocation: SourceLocation {
+  @inlinable
+  var sourceRange: SourceRange {
     switch self {
-    case let .name(issue):            return issue.startLocation
-    case let .typeAnnotation(issue):  return issue.startLocation
-    }
-  }
-  
-  var endLocation: SourceLocation {
-    switch self {
-    case let .name(issue):            return issue.endLocation
-    case let .typeAnnotation(issue):  return issue.endLocation
+    case let .name(issue):            return issue.sourceRange
+    case let .typeAnnotation(issue):  return issue.sourceRange
     }
   }
   
   /// The identifier for the error type in the context.
+  @inlinable
   var id: UInt {
     switch self {
     case let .name(issue):            return issue.id
@@ -58,36 +56,18 @@ enum UnresolvedSemantics: Hashable {
   
   struct NamingIssue: Hashable {
     
+    typealias Key = NamingKey
+    
     let treeID: UInt
     
-    let startLocation: SourceLocation
-    
-    let endLocation: SourceLocation
+    let sourceRange: SourceRange
     
     /// The identifier for the error type in the context.
     let id: UInt
     
-    let key: Key
+    let key: NamingKey
     
     let suggestedName: String?
-    
-    struct Key: RawRepresentable, Hashable {
-      
-      typealias RawValue = String
-      
-      var rawValue: RawValue
-      
-      init(rawValue: String) {
-        self.rawValue = rawValue
-      }
-      
-      static let storageClassName = Key(rawValue: "Storage Class Name")
-      
-      static let storageVariableName = Key(rawValue: "Storage Variable Name")
-      
-      static let storageUniquificationFunctionName = Key(rawValue: "Storage Uniquification Function Name")
-      
-    }
     
   }
   
@@ -99,9 +79,7 @@ enum UnresolvedSemantics: Hashable {
     
     let treeID: UInt
     
-    let startLocation: SourceLocation
-    
-    let endLocation: SourceLocation
+    let sourceRange: SourceRange
     
     /// The identifier for the error type in the context.
     let id: UInt
@@ -114,6 +92,24 @@ enum UnresolvedSemantics: Hashable {
     
   }
   
+  
+}
+
+struct NamingKey: RawRepresentable, Hashable {
+  
+  typealias RawValue = String
+  
+  var rawValue: RawValue
+  
+  init(rawValue: String) {
+    self.rawValue = rawValue
+  }
+  
+  static let storageClassName = NamingKey(rawValue: "Storage Class Name")
+  
+  static let storageVariableName = NamingKey(rawValue: "Storage Variable Name")
+  
+  static let storageUniquificationFunctionName = NamingKey(rawValue: "Storage Uniquification Function Name")
   
 }
 

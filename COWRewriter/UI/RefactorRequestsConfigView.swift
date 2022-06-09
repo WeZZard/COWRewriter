@@ -316,7 +316,7 @@ private enum UnresolvedSemanticsItemView: View {
       VStack(alignment: .leading) {
         Text(issue.key.rawValue)
         TextField(
-          issue.suggestedName,
+          issue.suggestedName ?? "",
           text: $issue.userSpecifiedName
         )
       }

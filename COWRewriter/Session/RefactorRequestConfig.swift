@@ -53,10 +53,10 @@ struct RefactorRequestConfig: Equatable, Identifiable {
           continue
         }
         return issue.userSpecifiedName.isEmpty
-          ? issue.suggestedName
+          ? (issue.suggestedName ?? decl.namingSuggestions[key] )
           : issue.userSpecifiedName
       }
-      return nil
+      return decl.namingSuggestions[key]
     }
     return RefactorRequest(
       decl: decl,
@@ -118,14 +118,14 @@ struct RefactorRequestConfig: Equatable, Identifiable {
       
       let key: Key
       
-      let suggestedName: String
+      let suggestedName: String?
       
       var userSpecifiedName: String
       
       init(_ issue: UnresolvedSemantics.NamingIssue) {
         self.id = issue.id
         self.key = issue.key
-        self.suggestedName = issue.suggestedName ?? ""
+        self.suggestedName = issue.suggestedName
         self.userSpecifiedName = ""
       }
       

@@ -23,7 +23,7 @@ enum Target {
     return .of32Bit
 #endif
   }
-
+  
 }
 
 protocol SemaInputting: AnyObject {
@@ -78,14 +78,14 @@ class Sema {
   @inline(__always)
   private func perform() {
     /*
-    let typeChecker = TypeChecker(
-      target: target,
-      tree: input.tree,
-      slc: input.slc
-    )
+     let typeChecker = TypeChecker(
+     target: target,
+     tree: input.tree,
+     slc: input.slc
+     )
      */
     let typeCheckedTree = input.tree // FIXME: typeChecker.check()
-    let detector = RefactorableDeclsDetector(
+    let detector = SimpleRefactorableDeclsDetector(
       treeID: input.treeID,
       tree: typeCheckedTree,
       slc: input.slc
@@ -93,7 +93,7 @@ class Sema {
     output.tree = typeCheckedTree
     output.refactorableDecls = detector.detect()
   }
-
+  
 }
 
 
@@ -249,155 +249,7 @@ private class TypeChecker: SyntaxRewriter {
 }
 
 
-private class RefactorableDeclsDetector: SyntaxVisitor {
-  
-  class Scope {
-    
-    var subscopes: [Scope]
-    
-    init() {
-      self.subscopes = []
-    }
-    
-    var parent: Scope? {
-      fatalError()
-    }
-    
-    func addScope(_ scope: Scope) {
-      subscopes.append(scope)
-    }
-    
-  }
-  
-  class TopLevel: Scope {
-    
-    override var parent: Scope? {
-      nil
-    }
-    
-  }
-  
-  class StructScope: Scope {
-    
-    private unowned let _parent: Scope
-    
-    let identifier: String
-    
-    let sourceRange: SourceRange
-    
-    init(
-      parent: Scope,
-      identifier: String,
-      sourceRange: SourceRange
-    ) {
-      self._parent = parent
-      self.identifier = identifier
-      self.sourceRange = sourceRange
-    }
-    
-    override var parent: Scope? {
-      _parent
-    }
-    
-    var storedPropertiesCount: Int {
-      subscopes.reduce(0) { partial, each in
-        guard let varScope = each as? VariableScope else {
-          return partial
-        }
-        return varScope.storageBackwardedBindingsCount + partial
-      }
-    }
-    
-    var untyppedBindings: [UntyppedBinding] {
-      subscopes.compactMap { each -> [UntyppedBinding]? in
-        guard let varScope = each as? VariableScope else {
-          return nil
-        }
-        return varScope.untyppedBindings
-      }.flatMap({$0})
-    }
-    
-  }
-  
-  class VariableScope: Scope {
-    
-    private unowned let _parent: Scope
-    
-    let usesLetKeyword: Bool
-    
-    init(parent: Scope, usesLetKeyword: Bool) {
-      self._parent = parent
-      self.usesLetKeyword = usesLetKeyword
-    }
-    
-    override var parent: Scope? {
-      _parent
-    }
-    
-    var storageBackwardedBindingsCount: Int {
-      subscopes.filter { each in
-        (each as? BindingScope)?.isStored == true
-      }.count
-    }
-    
-    var untyppedBindings: [UntyppedBinding] {
-      subscopes.compactMap { each in
-        guard let binding = each as? BindingScope else {
-          return nil
-        }
-        guard binding.type == nil else {
-          return nil
-        }
-        return UntyppedBinding(
-          letOrVar: binding.letOrVar,
-          identifier: binding.identifier,
-          startLocation: binding.startLocation,
-          endLocation: binding.endLocation
-        )
-      }
-    }
-    
-  }
-  
-  class BindingScope: Scope {
-    
-    private unowned let _parent: Scope
-    
-    let letOrVar: String
-    
-    let identifier: String
-    
-    let startLocation: SourceLocation
-    
-    let endLocation: SourceLocation
-    
-    let type: String?
-    
-    let isStored: Bool
-    
-    init(
-      parent: Scope,
-      letOrVar: String,
-      identifier: String,
-      startLocation: SourceLocation,
-      endLocation: SourceLocation,
-      type: String?,
-      isStored: Bool
-    ) {
-      self._parent = parent
-      self.letOrVar = letOrVar
-      self.identifier = identifier
-      self.startLocation = startLocation
-      self.endLocation = endLocation
-      self.type = type
-      self.isStored = isStored
-    }
-    
-    override var parent: Scope? {
-      _parent
-    }
-    
-  }
+private class SimpleRefactorableDeclsDetector: SyntaxVisitor {
   
   struct UntyppedBinding {
     
@@ -405,9 +257,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     
     let identifier: String
     
-    let startLocation: SourceLocation
-    
-    let endLocation: SourceLocation
+    let sourceRange: SourceRange
     
   }
   
@@ -417,162 +267,191 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
   
   let slc: SourceLocationConverter
   
-  private var decls: [RefactorableDecl]
-  
   private var hasDetected: Bool
   
-  private var rootScope: TopLevel
+  private var structDeclSyntaxs: [StructDeclSyntax]
   
-  private unowned var _topScope: Scope
-  
-  func topScope<T: Scope>() -> T {
-    return unsafeDowncast(_topScope, to: T.self)
-  }
-  
-  func mayBeTopScope<T: Scope>() -> T? {
-    return _topScope as? T
-  }
-  
-  func pushScope(_ scope: Scope) {
-    _topScope.addScope(scope)
-    _topScope = scope
-  }
-  
-  @discardableResult
-  func popScope<T: Scope>() -> T {
-    let popped = _topScope
-    _topScope = _topScope.parent!
-    return unsafeDowncast(popped, to: T.self)
-  }
+  private var refactorableDecls: [RefactorableDecl]
   
   init(treeID: UInt, tree: SourceFileSyntax, slc: SourceLocationConverter) {
     self.treeID = treeID
     self.tree = tree
     self.slc = slc
-    self.decls = []
-    let topLevel = TopLevel()
-    self.rootScope = topLevel
-    self._topScope = topLevel
     self.hasDetected = false
+    self.structDeclSyntaxs = []
+    self.refactorableDecls = []
   }
   
   func detect() -> [RefactorableDecl] {
     if hasDetected {
-      return decls
+      return refactorableDecls
     }
     walk(tree)
+    update(structDeclSyntaxs)
     hasDetected = true
-    return decls
-  }
-  
-  override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-    pushScope(
-      StructScope(
-        parent: topScope(),
-        identifier: node.identifier.text,
-        sourceRange: node.sourceRange(converter: slc)
-      )
-    )
-    return super.visit(node)
+    return refactorableDecls
   }
   
   override func visitPost(_ node: StructDeclSyntax) {
     super.visitPost(node)
-    let topScope: StructScope = popScope()
-    updateDecls(topScope)
+    structDeclSyntaxs.append(node)
   }
   
-  override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-    pushScope(VariableScope(parent: topScope(), usesLetKeyword: node.usesLetKeyword))
-    return super.visit(node)
-  }
-  
-  override func visitPost(_ node: VariableDeclSyntax) {
-    super.visitPost(node)
-    popScope()
-  }
-  
-  override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
-    let parentVarScope = mayBeTopScope() as? VariableScope
-    pushScope(
-      BindingScope(
-        parent: topScope(),
-        letOrVar: parentVarScope?.usesLetKeyword == true ? "let" : "var",
-        identifier: node.pattern.as(IdentifierPatternSyntax.self)!.identifier.text,
-        startLocation: node.startLocation(converter: slc),
-        endLocation: node.endLocation(converter: slc),
-        type: node.typeAnnotation?.type.description,
-        isStored: parentVarScope?.usesLetKeyword == true || node.hasStorage
-      )
-    )
-    return super.visit(node)
-  }
-  
-  override func visitPost(_ node: PatternBindingSyntax) {
-    super.visitPost(node)
-    popScope()
-  }
-  
-  private func collectUnresolvedSemantics(_ scope: StructScope) -> [UnresolvedSemantics] {
-    return makeStorageRelatedUnresolvedSemanticsIssues(scope)
-      + scope.untyppedBindings.map(collectTypeAnnotationIssues)
+  private struct SuggestedStorageNamings {
+    
+    var storageClassName: String
+    
+    var storageVariableName: String
+    
+    var storageUniquificationFunctionName: String
+    
+    init() {
+      storageClassName = "Storage"
+      storageVariableName = "storage"
+      storageUniquificationFunctionName = "makeUniqueStorageIfNeeded"
+    }
+    
   }
   
   private func makeStorageRelatedUnresolvedSemanticsIssues(
-    _ scope: StructScope
-  ) -> [UnresolvedSemantics] {
-    typealias Item = (key: UnresolvedSemantics.NamingIssue.Key, name: String)
-    let items: [Item] = [
-      (.storageClassName, "Storage"),
-      (.storageVariableName, "storage"),
-      (.storageUniquificationFunctionName, "makeUniqueStorageIfNeeded"),
-    ]
-    return items.map { item in
-        .name(
-          .init(
-            treeID: treeID,
-            startLocation: scope.sourceRange.start,
-            endLocation: scope.sourceRange.end,
-            id: UInt(sourceRange: scope.sourceRange, key: item.key),
-            key: item.key,
-            suggestedName: item.name
-          )
-        )
-    }
-  }
-  
-  private func collectTypeAnnotationIssues(
-    _ untyppedBinding: UntyppedBinding
-  ) -> UnresolvedSemantics {
-    .typeAnnotation(
-      UnresolvedSemantics.TypeAnnotationIssue(
-        treeID: treeID,
-        startLocation: untyppedBinding.startLocation,
-        endLocation: untyppedBinding.endLocation,
-        id: UInt(
-          startLocation: untyppedBinding.startLocation,
-          endLocation: untyppedBinding.endLocation
-        ),
-        letOrVar: untyppedBinding.letOrVar,
-        identifier: untyppedBinding.identifier,
-        maybeType: nil
-      )
+    for structDecl: StructDeclSyntax
+  ) -> ([UnresolvedSemantics], [NamingKey : String]) {
+    typealias Names = (
+      instanceVariableNames: Set<String>,
+      instanceFunctionNames: Set<String>,
+      subTypeNames: Set<String>
     )
+    let (
+      instanceVariableNames,
+      instanceFunctionNames,
+      subTypeNames
+    ) = structDecl.members.members.reduce(([], [], [])) { partial, each -> Names in
+      var (instanceVariableNames, instanceFunctionNames,subTypeNames) = partial
+      if let varDecl = each.decl.as(VariableDeclSyntax.self) {
+        let isStatic = varDecl.modifiers?.contains(where: { $0.name == .static }) == true
+        for binding in varDecl.bindings {
+          guard let idPattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
+            return (instanceVariableNames, instanceFunctionNames, subTypeNames)
+          }
+          if !isStatic {
+            instanceVariableNames.insert(idPattern.identifier.withoutTrivia().text)
+          }
+        }
+      } else if let funcDecl = each.decl.as(FunctionDeclSyntax.self) {
+        if !(funcDecl.modifiers?.contains(where: { $0.name == .static }) == true) {
+          instanceFunctionNames.insert(funcDecl.identifier.withoutTrivia().text)
+        }
+      } else if let structDecl = each.decl.as(StructDeclSyntax.self) {
+        subTypeNames.insert(structDecl.identifier.withoutTrivia().text)
+      } else if let enumDecl = each.decl.as(EnumDeclSyntax.self) {
+        subTypeNames.insert(enumDecl.identifier.withoutTrivia().text)
+      } else if let classDecl = each.decl.as(ClassDeclSyntax.self) {
+        subTypeNames.insert(classDecl.identifier.withoutTrivia().text)
+      }
+      return (instanceVariableNames, instanceFunctionNames, subTypeNames)
+    }
+    
+    func resolveName(_ name: String, with existedNames: Set<String>)
+    -> (
+      resolvedName: String,
+      conflictCount: Int
+    ) {
+      var conflistCount = 0
+      var resolvedName = name
+      while existedNames.contains(resolvedName) {
+        resolvedName = "\(name)\(conflistCount + 1)"
+        conflistCount += 1
+      }
+      return (resolvedName, conflistCount)
+    }
+    
+    var suggestedNamings = [NamingKey : String]()
+    suggestedNamings[.storageClassName] = "Storage"
+    suggestedNamings[.storageVariableName] = "storage"
+    suggestedNamings[.storageUniquificationFunctionName] = "makeUniqueStorageIfNeeded"
+    
+    typealias Item = (key: NamingKey, existedNames: Set<String>)
+    
+    let items: [Item] = [
+      (.storageClassName, subTypeNames),
+      (.storageVariableName, instanceVariableNames),
+      (.storageUniquificationFunctionName, instanceFunctionNames),
+    ]
+    
+    let sourceRange = structDecl.sourceRange(converter: slc)
+    
+    let unresolvedSemantics = items.compactMap {
+      (key, existednames) -> UnresolvedSemantics? in
+      let name = suggestedNamings[key]!
+      let (resolvedName, conflictsCount) = resolveName(name, with: existednames)
+      if conflictsCount == 0 {
+        return nil
+      }
+      suggestedNamings[key] = resolvedName
+      return .name(
+        .init(
+          treeID: treeID,
+          sourceRange: sourceRange,
+          id: UInt(sourceRange: sourceRange, key: key),
+          key: key,
+          suggestedName: resolvedName
+        )
+      )
+    }
+    
+    return (unresolvedSemantics, suggestedNamings)
   }
   
-  private func updateDecls(_ scope: StructScope) {
-    guard scope.storedPropertiesCount > 0 else {
+  private func makeTypeAnnotationIssues(
+    for structDeclSyntax: StructDeclSyntax
+  ) -> [UnresolvedSemantics] {
+    var untyppedBindings = [UnresolvedSemantics]()
+    for eachMember in structDeclSyntax.members.members {
+      if let varDecl = eachMember.decl.as(VariableDeclSyntax.self) {
+        for binding in varDecl.bindings {
+          guard let idPattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
+            continue
+          }
+          if binding.typeAnnotation == nil {
+            let sourceRange = binding.sourceRange(converter: slc)
+            untyppedBindings.append(
+              .typeAnnotation(
+                UnresolvedSemantics.TypeAnnotationIssue(
+                  treeID: treeID,
+                  sourceRange: sourceRange,
+                  id: UInt(sourceRange: sourceRange),
+                  letOrVar: varDecl.letOrVarKeyword == .let ? "let" : "var",
+                  identifier: idPattern.identifier.withoutTrivia().text,
+                  maybeType: nil
+                )
+              )
+            )
+          }
+        }
+      }
+    }
+    return untyppedBindings
+  }
+  
+  private func update(_ syntaxes: [StructDeclSyntax]) {
+    guard syntaxes.count > 0 else {
       return
     }
     
-    let decl = RefactorableDecl(
-      treeID: treeID,
-      identifier: scope.identifier,
-      sourceRange: scope.sourceRange,
-      unresolvedSemantics: collectUnresolvedSemantics(scope)
-    )
-    
-    decls.append(decl)
+    self.refactorableDecls = syntaxes.map { decl in
+      
+      let (storageIssues, storageNamingSuggestions) = makeStorageRelatedUnresolvedSemanticsIssues(for: decl)
+      
+      let typeIssues = makeTypeAnnotationIssues(for: decl)
+      
+      return RefactorableDecl(
+        treeID: treeID,
+        identifier: decl.identifier.withoutTrivia().text,
+        sourceRange: decl.sourceRange(converter: slc),
+        namingSuggestions: storageNamingSuggestions,
+        unresolvedSemantics: typeIssues + storageIssues
+      )
+    }
   }
   
 }
@@ -602,12 +481,24 @@ extension UInt {
   
   @inline(__always)
   fileprivate init<Key: Hashable>(sourceRange: SourceRange, key: Key?) {
-    self.init(startLocation: sourceRange.start, endLocation: sourceRange.end, key: key)
+    self.init(
+      startLocation: sourceRange.start,
+      endLocation: sourceRange.end,
+      key: key
+    )
   }
   
   @inline(__always)
-  fileprivate init<Key: Hashable>(startLocation: SourceLocation, endLocation: SourceLocation, key: Key?) {
-    self.init(startOffset: startLocation.offset, endOffset: endLocation.offset, key: key)
+  fileprivate init<Key: Hashable>(
+    startLocation: SourceLocation,
+    endLocation: SourceLocation,
+    key: Key?
+  ) {
+    self.init(
+      startOffset: startLocation.offset,
+      endOffset: endLocation.offset,
+      key: key
+    )
   }
   
   @inline(__always)
