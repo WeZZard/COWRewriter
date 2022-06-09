@@ -12,22 +12,22 @@ struct ContentView: View {
   @EnvironmentObject
   var sessionManager: SessionManager
   
-  @State
-  private var importErrorMessage: String?
-  
   var body: some View {
-    VStack(spacing: 16) {
-      if let session = sessionManager.currentSession {
-        RefactorView(selectedFileURL: $sessionManager.selectedFileURL)
-          .environmentObject(session)
-          .transition(.opacity)
-      } else {
-        FileDropView(selectedFileURL: $sessionManager.selectedFileURL)
-          .transition(.opacity)
-      }
+    refactorViewOrFileDropView
+      .padding()
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+  
+  @ViewBuilder
+  var refactorViewOrFileDropView: some View {
+    if let session = sessionManager.currentSession {
+      RefactorView(selectedFileURL: $sessionManager.selectedFileURL)
+        .environmentObject(session)
+        .transition(.opacity)
+    } else {
+      FileDropView(selectedFileURL: $sessionManager.selectedFileURL)
+        .transition(.opacity)
     }
-    .padding()
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
   
 }
