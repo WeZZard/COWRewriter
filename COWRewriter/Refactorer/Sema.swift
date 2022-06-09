@@ -438,7 +438,11 @@ private class SimpleRefactorableDeclsDetector: SyntaxVisitor {
       return
     }
     
-    self.refactorableDecls = syntaxes.map { decl in
+    self.refactorableDecls = syntaxes.compactMap { decl in
+      
+      guard decl.members.members.storedVariables.count > 0 else {
+        return nil
+      }
       
       let (storageIssues, storageNamingSuggestions) = makeStorageRelatedUnresolvedSemanticsIssues(for: decl)
       
