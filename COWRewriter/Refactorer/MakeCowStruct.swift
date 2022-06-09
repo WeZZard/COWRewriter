@@ -60,7 +60,7 @@ func makeCowStruct(
                     )
                   }
                 )
-              }
+              }.withLeadingTrivia(.newlines(2))
             )
           )
         }
@@ -74,7 +74,7 @@ func makeCowStruct(
                 functionName: storageUniquificationFunctionName,
                 storageClassName: storageClass.identifier.text,
                 storageVariableName: storageVariableName
-              )
+              ).withLeadingTrivia(.newlines(2))
             )
           )
         }
@@ -92,11 +92,17 @@ func makeCowStruct(
           storedPropertyVariableDecl: eachStoredVariable,
           storageVariableName: storageVariableName,
           storageUniquificationFunctionName: storageUniquificationFunctionName,
-          resolvedStorageNameAndTypes: resolvedStorageNameAndTypes)
+          resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
+        )
         for dispatchedVariableDecl in dispatchedVariableDecls {
           memberDeclBlock.addMember(
             MemberDeclListItemSyntax { item in
-              item.useDecl(DeclSyntax(dispatchedVariableDecl))
+              item.useDecl(
+                DeclSyntax(
+                  dispatchedVariableDecl
+                    .withLeadingTrivia(.newlines(2))
+                )
+              )
             }
           )
         }
@@ -110,7 +116,7 @@ func makeCowStruct(
                   storageClassName: storageClass.identifier.text,
                   storageVariableName: storageVariableName,
                   resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
-                )
+                ).withLeadingTrivia(.newlines(2))
               )
             )
           }
