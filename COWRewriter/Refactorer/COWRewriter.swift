@@ -103,7 +103,7 @@ private class COWRewriterConcrete: SyntaxRewriter {
       originalStructDecl: node,
       storageClass: storageClass,
       storageVariableName: request.storageVariableName,
-      storageUniquificationFunctionName: request.makeUniqueStorageFunctionName,
+      storageUniquificationFunctionName: request.storageUniquificationFunctionName,
       resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
     )
     

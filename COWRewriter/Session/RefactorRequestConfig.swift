@@ -9,29 +9,7 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxParser
 
-struct RefactorRequestConfig: Identifiable {
-  
-  struct UninferrablePatternBindingItem: Identifiable {
-    
-    let id: UInt
-    
-    let letOrVar: String
-    
-    let name: String
-    
-    let suggestedType: TypeSyntax?
-    
-    var userType: String
-    
-    init(_ binding: UninferrablePatternBinding) {
-      self.id = binding.id
-      self.letOrVar = binding.letOrVar
-      self.name = binding.identifier
-      self.suggestedType = binding.maybeType
-      self.userType = ""
-    }
-    
-  }
+struct RefactorRequestConfig: Equatable, Identifiable {
   
   let id: UUID
   
@@ -39,31 +17,14 @@ struct RefactorRequestConfig: Identifiable {
   
   let declName: String
   
-  let suggestedStorageClassName: String
-  
-  var userStorageClassName: String
-  
-  let suggestedMakeUniqueStorageFunctionName: String
-  
-  let suggestedStorageVariableName: String
-  
-  var userStorageVariableName: String
-  
-  var userMakeUniqueStorageFunctionName: String
-  
-  var uninferrablePatternBindings: [UninferrablePatternBindingItem]
+  var unresolvedSemanticsItems: [UnresolvedSemanticsItem]
   
   init(candidate: RefactorCandidate) {
     id = candidate.id
-    decl = candidate.content
-    declName = candidate.content.identifier
-    suggestedStorageClassName = candidate.content.suggestedStorageClassName
-    userStorageClassName = ""
-    suggestedStorageVariableName = candidate.content.suggestedStorageVariableName
-    userStorageVariableName = ""
-    suggestedMakeUniqueStorageFunctionName = candidate.content.suggestedMakeUniqueStorageFunctionName
-    userMakeUniqueStorageFunctionName = ""
-    uninferrablePatternBindings = candidate.content.uninferrablePatternBindings.compactMap(UninferrablePatternBindingItem.init)
+    let content = candidate.content
+    decl = content
+    declName = content.identifier
+    unresolvedSemanticsItems = content.unresolvedSemantics.map(UnresolvedSemanticsItem.init)
   }
   
   var request: RefactorRequest {
@@ -76,19 +37,101 @@ struct RefactorRequestConfig: Identifiable {
       }
       return tree.statements.first?.item.as(TypeSyntax.self)
     }
-    func makeTypedef(_ binding: UninferrablePatternBindingItem) -> (String, TypeSyntax)? {
-      guard let type = makeTypeSyntax(binding.userType) ?? binding.suggestedType else {
+    func makeTypedef(_ item: UnresolvedSemanticsItem) -> (String, TypeSyntax)? {
+      guard case let .typeAnnotation(issue) = item,
+            let type = makeTypeSyntax(issue.userType) ?? issue.suggestedType else {
         return nil
       }
-      return (binding.name, type)
+      return (issue.name, type)
+    }
+    func select<Items: Sequence>(
+      key: UnresolvedSemantics.NamingIssue.Key,
+      from items: Items
+    ) -> String? where Items.Element == UnresolvedSemanticsItem {
+      for item in items {
+        guard case let .name(issue) = item, issue.key == key else {
+          continue
+        }
+        return issue.userSpecifiedName.isEmpty
+          ? issue.suggestedName
+          : issue.userSpecifiedName
+      }
+      return nil
     }
     return RefactorRequest(
       decl: decl,
-      storageClassName: userStorageClassName.isEmpty ? suggestedStorageClassName : userStorageClassName,
-      storageVariableName: userStorageVariableName.isEmpty ? suggestedStorageVariableName : userStorageVariableName,
-      makeUniqueStorageFunctionName: userMakeUniqueStorageFunctionName.isEmpty ? suggestedMakeUniqueStorageFunctionName : userMakeUniqueStorageFunctionName,
-      typedefs: Dictionary(uniqueKeysWithValues: uninferrablePatternBindings.compactMap(makeTypedef))
+      storageClassName: select(key: .storageClassName, from: unresolvedSemanticsItems) ?? "",
+      storageVariableName: select(key: .storageVariableName, from: unresolvedSemanticsItems) ?? "",
+      storageUniquificationFunctionName: select(key: .storageUniquificationFunctionName, from: unresolvedSemanticsItems) ?? "",
+      typedefs: Dictionary(uniqueKeysWithValues: unresolvedSemanticsItems.compactMap(makeTypedef))
     )
   }
-
+  
+  enum UnresolvedSemanticsItem: Equatable, Identifiable {
+    
+    case name(NamingIssue)
+    
+    case typeAnnotation(TypeAnnotationIssue)
+    
+    @inline(__always)
+    var id: UInt {
+      switch self {
+      case let .name(issue):            return issue.id
+      case let .typeAnnotation(issue):  return issue.id
+      }
+    }
+    
+    init(_ semantics: UnresolvedSemantics) {
+      switch semantics {
+      case let .name(issue):
+        self = .name(NamingIssue(issue))
+      case let .typeAnnotation(issue):
+        self = .typeAnnotation(TypeAnnotationIssue(issue))
+      }
+    }
+    
+    struct TypeAnnotationIssue: Equatable, Identifiable {
+      
+      let id: UInt
+      
+      let letOrVar: String
+      
+      let name: String
+      
+      let suggestedType: TypeSyntax?
+      
+      var userType: String
+      
+      init(_ issue: UnresolvedSemantics.TypeAnnotationIssue) {
+        self.id = issue.id
+        self.letOrVar = issue.letOrVar
+        self.name = issue.identifier
+        self.suggestedType = issue.maybeType
+        self.userType = ""
+      }
+      
+    }
+    
+    struct NamingIssue: Equatable {
+      
+      let id: UInt
+      
+      let key: Key
+      
+      let suggestedName: String
+      
+      var userSpecifiedName: String
+      
+      init(_ issue: UnresolvedSemantics.NamingIssue) {
+        self.id = issue.id
+        self.key = issue.key
+        self.suggestedName = issue.suggestedName ?? ""
+        self.userSpecifiedName = ""
+      }
+      
+      typealias Key = UnresolvedSemantics.NamingIssue.Key
+      
+    }
+  }
+  
 }

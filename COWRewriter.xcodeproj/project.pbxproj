@@ -52,6 +52,7 @@
 		9CA5877D285112AC001FDA92 /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 9CA5877C285112AC001FDA92 /* Collections */; };
 		9CA5877F285112AC001FDA92 /* DequeModule in Frameworks */ = {isa = PBXBuildFile; productRef = 9CA5877E285112AC001FDA92 /* DequeModule */; };
 		9CA58781285112AC001FDA92 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 9CA58780285112AC001FDA92 /* OrderedCollections */; };
+		9CA5878328521407001FDA92 /* Binding+COWRewriterAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA5878228521407001FDA92 /* Binding+COWRewriterAdditions.swift */; };
 		9CC615D42843B7FF0027DF5B /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CC615D32843B7FF0027DF5B /* Scope.swift */; };
 		9CDEE1EE283F4147005C3A4F /* SemaTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */; };
 		9CDEE1F0283FACB9005C3A4F /* SemaTypeInferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */; };
@@ -117,6 +118,7 @@
 		9C7EA674283E98C0003E9194 /* Sema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
 		9C7EA676283E9E39003E9194 /* COWRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriter.swift; sourceTree = "<group>"; };
 		9C971C1C285065F60026ACA0 /* PrinterConfigs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrinterConfigs.swift; sourceTree = "<group>"; };
+		9CA5878228521407001FDA92 /* Binding+COWRewriterAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Binding+COWRewriterAdditions.swift"; sourceTree = "<group>"; };
 		9CC615D32843B7FF0027DF5B /* Scope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
 		9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaTestsBase.swift; sourceTree = "<group>"; };
 		9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemaTypeInferTests.swift; sourceTree = "<group>"; };
@@ -264,6 +266,7 @@
 				9C46396C284685DF0020FCEF /* RuntimeErrorHandling.swift */,
 				9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */,
 				9C768FAA284BB9F500FE835D /* ConditionalKeyboardShorcut.swift */,
+				9CA5878228521407001FDA92 /* Binding+COWRewriterAdditions.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -459,6 +462,7 @@
 				9C768F9D284B2EC300FE835D /* Printer.swift in Sources */,
 				9C768FA9284BA13C00FE835D /* ImportErrorMessageView.swift in Sources */,
 				9C768FB7284E270700FE835D /* MakeCowStruct.swift in Sources */,
+				9CA5878328521407001FDA92 /* Binding+COWRewriterAdditions.swift in Sources */,
 				9C080A032838FB5500ACDCE9 /* BottomToolbar.swift in Sources */,
 				9C46396D284685DF0020FCEF /* RuntimeErrorHandling.swift in Sources */,
 				9C0809CB2838BA2F00ACDCE9 /* ContentView.swift in Sources */,

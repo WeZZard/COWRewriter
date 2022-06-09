@@ -21,7 +21,8 @@ struct FileDropView: View {
       VStack(spacing: 8) {
         HStack {
           Button("Open", action: onTapOpen)
-          Text("a file or drag & drop it here.")
+            .fixedSize()
+          Text("or drop a Swift source file.")
             .lineLimit(1)
             .fixedSize(horizontal: true, vertical: true)
         }

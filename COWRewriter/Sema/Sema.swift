@@ -513,21 +513,50 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
     popScope()
   }
   
-  private func makeUninferrablePatternBinding(
+  private func collectUnresolvedSemantics(_ scope: StructScope) -> [UnresolvedSemantics] {
+    return makeStorageRelatedUnresolvedSemanticsIssues(scope)
+      + scope.untyppedBindings.map(collectTypeAnnotationIssues)
+  }
+  
+  private func makeStorageRelatedUnresolvedSemanticsIssues(
+    _ scope: StructScope
+  ) -> [UnresolvedSemantics] {
+    typealias Item = (key: UnresolvedSemantics.NamingIssue.Key, name: String)
+    let items: [Item] = [
+      (.storageClassName, "Storage"),
+      (.storageVariableName, "storage"),
+      (.storageUniquificationFunctionName, "makeUniqueStorageIfNeeded"),
+    ]
+    return items.map { item in
+        .name(
+          .init(
+            treeID: treeID,
+            startLocation: scope.sourceRange.start,
+            endLocation: scope.sourceRange.end,
+            id: UInt(sourceRange: scope.sourceRange, key: item.key),
+            key: item.key,
+            suggestedName: item.name
+          )
+        )
+    }
+  }
+  
+  private func collectTypeAnnotationIssues(
     _ untyppedBinding: UntyppedBinding
-  ) -> UninferrablePatternBinding {
-    var hasher = Hasher()
-    hasher.combine(untyppedBinding.startLocation.offset)
-    hasher.combine(untyppedBinding.endLocation.offset)
-    let id = UInt(bitPattern: hasher.finalize())
-    return UninferrablePatternBinding(
-      treeID: treeID,
-      id: id,
-      letOrVar: untyppedBinding.letOrVar,
-      identifier: untyppedBinding.identifier,
-      startLocation: untyppedBinding.startLocation,
-      endLocation: untyppedBinding.endLocation,
-      maybeType: nil
+  ) -> UnresolvedSemantics {
+    .typeAnnotation(
+      UnresolvedSemantics.TypeAnnotationIssue(
+        treeID: treeID,
+        startLocation: untyppedBinding.startLocation,
+        endLocation: untyppedBinding.endLocation,
+        id: UInt(
+          startLocation: untyppedBinding.startLocation,
+          endLocation: untyppedBinding.endLocation
+        ),
+        letOrVar: untyppedBinding.letOrVar,
+        identifier: untyppedBinding.identifier,
+        maybeType: nil
+      )
     )
   }
   
@@ -540,10 +569,7 @@ private class RefactorableDeclsDetector: SyntaxVisitor {
       treeID: treeID,
       identifier: scope.identifier,
       sourceRange: scope.sourceRange,
-      suggestedStorageClassName: "Storage",
-      suggestedStorageVariableName: "storage",
-      suggestedMakeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",
-      uninferrablePatternBindings: scope.untyppedBindings.map(makeUninferrablePatternBinding)
+      unresolvedSemantics: collectUnresolvedSemantics(scope)
     )
     
     decls.append(decl)
@@ -567,6 +593,50 @@ extension PatternBindingSyntax {
   
   fileprivate var hasStorage: Bool {
     accessor == nil
+  }
+  
+}
+
+
+extension UInt {
+  
+  @inline(__always)
+  fileprivate init<Key: Hashable>(sourceRange: SourceRange, key: Key?) {
+    self.init(startLocation: sourceRange.start, endLocation: sourceRange.end, key: key)
+  }
+  
+  @inline(__always)
+  fileprivate init<Key: Hashable>(startLocation: SourceLocation, endLocation: SourceLocation, key: Key?) {
+    self.init(startOffset: startLocation.offset, endOffset: endLocation.offset, key: key)
+  }
+  
+  @inline(__always)
+  fileprivate init<Key: Hashable>(startOffset: Int, endOffset: Int, key: Key?) {
+    var hasher = Hasher()
+    hasher.combine(startOffset)
+    hasher.combine(endOffset)
+    if let key = key {
+      hasher.combine(key)
+    }
+    self = UInt(bitPattern: hasher.finalize())
+  }
+  
+  @inline(__always)
+  fileprivate init(sourceRange: SourceRange) {
+    self.init(startLocation: sourceRange.start, endLocation: sourceRange.end)
+  }
+  
+  @inline(__always)
+  fileprivate init(startLocation: SourceLocation, endLocation: SourceLocation) {
+    self.init(startOffset: startLocation.offset, endOffset: endLocation.offset)
+  }
+  
+  @inline(__always)
+  fileprivate init(startOffset: Int, endOffset: Int) {
+    var hasher = Hasher()
+    hasher.combine(startOffset)
+    hasher.combine(endOffset)
+    self = UInt(bitPattern: hasher.finalize())
   }
   
 }

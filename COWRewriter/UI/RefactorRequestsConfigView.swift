@@ -30,16 +30,27 @@ struct RefactorRequestsConfigView: View {
   @State
   private var showPreviewOptions: Bool = false
   
+  @State
+  private var showUnresolvedSemanticsList: Bool = false
+  
   var body: some View {
     HSplitView {
       refactorableTypeList
         .minSizeBoundedSplitContent(at: .first)
-      unresolvedSemanticsList
-        .minSizeBoundedSplitContent(at: .intermediate)
+      if showUnresolvedSemanticsList {
+        unresolvedSemanticsList
+          .minSizeBoundedSplitContent(at: .intermediate)
+      }
       refactorPreviewView
         .minSizeBoundedSplitContent(at: .last)
     }
     .onChange(of: highlightedDeclID, perform: onHighlightedDeclIDChange)
+    .onChange(of: selectedCandidates) { _ in
+      updateSplitContents()
+    }
+    .onAppear {
+      updateSplitContents()
+    }
   }
   
   @ViewBuilder
@@ -75,38 +86,8 @@ struct RefactorRequestsConfigView: View {
       List {
         ForEach($refactorRequestConfigs.filter(isOfSelectedCandidate)) { $group in
           Section("struct \(group.declName)") {
-            // Currently always needs user to set storage class name
-            VStack(alignment: .leading) {
-              Text("Storage Class Name:")
-              TextField(
-                group.suggestedStorageClassName,
-                text: $group.userStorageClassName
-              )
-            }
-            // Currently always needs user to set storage variable name
-            VStack(alignment: .leading) {
-              Text("Storage Variable Name:")
-              TextField(
-                group.suggestedStorageVariableName,
-                text: $group.userStorageVariableName
-              )
-            }
-            // Currently always needs user to make unique storage function name
-            VStack(alignment: .leading) {
-              Text("Make Unique Storage Function Name:")
-              TextField(
-                group.suggestedMakeUniqueStorageFunctionName,
-                text: $group.userMakeUniqueStorageFunctionName
-              )
-            }
-            ForEach($group.uninferrablePatternBindings) { $item in
-              VStack(alignment: .leading) {
-                Text("\(item.letOrVar) \(item.name): ")
-                TextField(
-                  item.suggestedType?.description ?? "Missing type",
-                  text: $item.userType
-                )
-              }
+            ForEach($group.unresolvedSemanticsItems) { $item in
+              UnresolvedSemanticsItemView($item)
             }
           }
           .transition(.opacity.combined(with: .move(edge: .top)))
@@ -188,18 +169,30 @@ struct RefactorRequestsConfigView: View {
     }
   }
   
-  private func isOfSelectedCandidate(_ config: Binding<RefactorRequestConfig>) -> Bool {
-    selectedCandidates.contains(config.id)
-  }
-  
   private func onHighlightedDeclIDChange(_ id: UUID?) {
     guard let id = id else {
       return
     }
-    applyHighlight(id: id)
+    updateHighlightId(id)
   }
   
-  private func applyHighlight(id: UUID) {
+  private func isOfSelectedCandidate(_ config: RefactorRequestConfig) -> Bool {
+    selectedCandidates.contains(config.id)
+  }
+  
+  private func isOfSelectedCandidate(_ config: Binding<RefactorRequestConfig>) -> Bool {
+    selectedCandidates.contains(config.id)
+  }
+  
+  private func updateSplitContents() {
+    showUnresolvedSemanticsList = refactorRequestConfigs
+      .filter(isOfSelectedCandidate)
+      .reduce(false) { partial, config in
+        partial || !config.unresolvedSemanticsItems.isEmpty
+      }
+  }
+  
+  private func updateHighlightId(_ id: UUID) {
     
   }
   
@@ -266,4 +259,88 @@ private struct TableColumnContentToggle: View {
     }
   }
 
+}
+
+private enum UnresolvedSemanticsItemView: View {
+  
+  typealias Item = RefactorRequestConfig.UnresolvedSemanticsItem
+  
+  case name(NamingIssueView)
+  
+  case typeAnnotation(TypeAnnotationIssueView)
+  
+  var body: some View {
+    switch self {
+    case let .name(view):
+      view
+    case let .typeAnnotation(view):
+      view
+    }
+  }
+  
+  init(_ item: Binding<Item>) {
+    switch item.wrappedValue {
+    case let .name(issue):
+      self = .name(
+        NamingIssueView(
+          issue: Binding(
+            get: { issue },
+            set: { newValue, transaction in
+              item.wrappedValue = .name(newValue)
+            }
+          )
+        )
+      )
+    case let .typeAnnotation(issue):
+      self = .typeAnnotation(
+        TypeAnnotationIssueView(
+          issue: Binding(
+            get: { issue },
+            set: { newValue, transaction in
+              item.wrappedValue = .typeAnnotation(newValue)
+            }
+          )
+        )
+      )
+    }
+  }
+  
+  struct NamingIssueView: View {
+    
+    typealias Issue = Item.NamingIssue
+    
+    @Binding
+    var issue: Issue
+    
+    var body: some View {
+      VStack(alignment: .leading) {
+        Text(issue.key.rawValue)
+        TextField(
+          issue.suggestedName,
+          text: $issue.userSpecifiedName
+        )
+      }
+    }
+    
+  }
+  
+  struct TypeAnnotationIssueView: View {
+    
+    typealias Issue = Item.TypeAnnotationIssue
+    
+    @Binding
+    var issue: Issue
+    
+    var body: some View {
+      VStack(alignment: .leading) {
+        Text("\(issue.letOrVar) \(issue.name): ")
+        TextField(
+          issue.suggestedType?.description ?? "Missing type",
+          text: $issue.userType
+        )
+      }
+    }
+    
+  }
+  
 }

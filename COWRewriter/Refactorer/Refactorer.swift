@@ -17,34 +17,103 @@ struct RefactorableDecl: Hashable {
   
   let sourceRange: SourceRange
   
-  let suggestedStorageClassName: String
-  
-  let suggestedStorageVariableName: String
-  
-  let suggestedMakeUniqueStorageFunctionName: String
-  
-  /// COW refactoring based on pattern binding's type.
-  let uninferrablePatternBindings: [UninferrablePatternBinding]
+  let unresolvedSemantics: [UnresolvedSemantics]
   
 }
 
-/// Pattern bindings that cannot infer its type.
-struct UninferrablePatternBinding: Hashable {
+enum UnresolvedSemantics: Hashable {
   
-  let treeID: UInt
+  case name(NamingIssue)
+  
+  case typeAnnotation(TypeAnnotationIssue)
+  
+  var treeID: UInt {
+    switch self {
+    case let .name(issue):            return issue.treeID
+    case let .typeAnnotation(issue):  return issue.treeID
+    }
+  }
+  
+  var startLocation: SourceLocation {
+    switch self {
+    case let .name(issue):            return issue.startLocation
+    case let .typeAnnotation(issue):  return issue.startLocation
+    }
+  }
+  
+  var endLocation: SourceLocation {
+    switch self {
+    case let .name(issue):            return issue.endLocation
+    case let .typeAnnotation(issue):  return issue.endLocation
+    }
+  }
   
   /// The identifier for the error type in the context.
-  let id: UInt
+  var id: UInt {
+    switch self {
+    case let .name(issue):            return issue.id
+    case let .typeAnnotation(issue):  return issue.id
+    }
+  }
   
-  let letOrVar: String
+  struct NamingIssue: Hashable {
+    
+    let treeID: UInt
+    
+    let startLocation: SourceLocation
+    
+    let endLocation: SourceLocation
+    
+    /// The identifier for the error type in the context.
+    let id: UInt
+    
+    let key: Key
+    
+    let suggestedName: String?
+    
+    struct Key: RawRepresentable, Hashable {
+      
+      typealias RawValue = String
+      
+      var rawValue: RawValue
+      
+      init(rawValue: String) {
+        self.rawValue = rawValue
+      }
+      
+      static let storageClassName = Key(rawValue: "Storage Class Name")
+      
+      static let storageVariableName = Key(rawValue: "Storage Variable Name")
+      
+      static let storageUniquificationFunctionName = Key(rawValue: "Storage Uniquification Function Name")
+      
+    }
+    
+  }
   
-  let identifier: String
+  /// Pattern bindings that cannot infer its type.
+  ///
+  /// - Note: COW refactoring based on pattern binding's type.
+  ///
+  struct TypeAnnotationIssue: Hashable {
+    
+    let treeID: UInt
+    
+    let startLocation: SourceLocation
+    
+    let endLocation: SourceLocation
+    
+    /// The identifier for the error type in the context.
+    let id: UInt
+    
+    let letOrVar: String
+    
+    let identifier: String
+    
+    let maybeType: TypeSyntax?
+    
+  }
   
-  let startLocation: SourceLocation
-  
-  let endLocation: SourceLocation
-  
-  let maybeType: TypeSyntax?
   
 }
 
@@ -56,7 +125,7 @@ struct RefactorRequest: Equatable {
   
   let storageVariableName: String
   
-  let makeUniqueStorageFunctionName: String
+  let storageUniquificationFunctionName: String
   
   let typedefs: [String : TypeSyntax]
   

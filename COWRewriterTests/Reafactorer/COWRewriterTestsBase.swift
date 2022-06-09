@@ -54,7 +54,7 @@ class COWRewriterTestsBase: XCTestCase {
           decl: $0,
           storageClassName: "Storage",
           storageVariableName: "storage",
-          makeUniqueStorageFunctionName: "makeUniqueStorageIfNeeded",
+          storageUniquificationFunctionName: "makeUniqueStorageIfNeeded",
           typedefs: [:]
         )
       }
