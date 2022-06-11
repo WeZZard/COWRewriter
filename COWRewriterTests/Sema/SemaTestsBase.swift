@@ -123,7 +123,7 @@ class SemaTestsBase: XCTestCase {
       }
     }
     
-    private func evaluateTypeCheck(tree: Syntax, file: StaticString, line: UInt) {
+    private func evaluateTypeCheck(tree: SourceFileSyntax, file: StaticString, line: UInt) {
       let reader = BindingsReader(tree: tree)
       reader.readIfNeeded()
       for (identifier, eachExpectation) in expectedTypeCheckResults {
@@ -222,7 +222,7 @@ class SemaTestsBase: XCTestCase {
   
   private class Context: SemaInputting, SemaOutputting {
     
-    var tree: Syntax
+    var tree: SourceFileSyntax
     
     let treeID: UInt
     
@@ -231,7 +231,7 @@ class SemaTestsBase: XCTestCase {
     let slc: SourceLocationConverter
     
     init(source: String) throws {
-      self.tree = Syntax(try SyntaxParser.parse(source: source))
+      self.tree = try SyntaxParser.parse(source: source)
       self.treeID = UInt.random(in: .min...(.max))
       self.refactorableDecls = []
       self.slc = SourceLocationConverter(file: "IN_MEMORY_SOURCE", source: source)
@@ -456,7 +456,7 @@ class SemaTestsBase: XCTestCase {
       
     }
     
-    let tree: Syntax
+    let tree: SourceFileSyntax
     
     private(set) var bindings: Bindings
     
@@ -466,7 +466,7 @@ class SemaTestsBase: XCTestCase {
     
     private unowned var topNode: Node
     
-    init(tree: Syntax) {
+    init(tree: SourceFileSyntax) {
       let node = Node(payload: .topLevel(children: []))
       self.tree = tree
       self.bindings = [:]

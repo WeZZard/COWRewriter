@@ -359,7 +359,8 @@ private class SimpleRefactorableDeclsDetector: SyntaxVisitor {
       var conflistCount = 0
       var resolvedName = name
       while existedNames.contains(resolvedName) {
-        resolvedName = "\(name)\(conflistCount + 1)"
+        // If there is `Storage`, then try `Storage2`
+        resolvedName = "\(name)\(conflistCount + 2)"
         conflistCount += 1
       }
       return (resolvedName, conflistCount)

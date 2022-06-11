@@ -18,6 +18,7 @@ class COWRewriterWontRewriteTests: COWRewriterTestsBase {
     let expected = """
     struct Foo {
     }
+    
     """
     
     await evaluate(source: source, expected: expected)
@@ -38,6 +39,7 @@ class COWRewriterWontRewriteTests: COWRewriterTestsBase {
       var value: Int { 0 }
     
     }
+    
     """
     
     await evaluate(source: source, expected: expected)
@@ -62,186 +64,11 @@ class COWRewriterWontRewriteTests: COWRewriterTestsBase {
       var fee: Int { 0 }
     
       var foe: Int { 0 }
-      
+    
       var fum: Int { 0 }
     
     }
-    """
     
-    await evaluate(source: source, expected: expected)
-  }
-  
-  func testWontRewriteStructWithUniqueStoredPropertyWhichHashAppliedCOWTechniques() async {
-    let source = """
-    struct Foo {
-      var foo: Int {
-        _read {
-          yield storage.foo
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.foo
-        }
-      }
-      
-      init(foo: Int) {
-        self.storage = Storage(foo: foo)
-      }
-      
-      private var storage: Storage
-    
-      private class Storage {
-        var foo: Int
-        
-        @inline(__always)
-        init(foo: Int) {
-          self.foo = foo
-        }
-    
-        @inline(__always)
-        convenience init(storage: Storage) {
-          self.init(foo: storage.foo)
-        }
-      }
-      
-      @inline(__always)
-      private mutating func makeUniquelyReferencedStorage() {
-        guard !isKnownUniquelyReferenced(&storage) else {
-          return
-        }
-        storage = Storage(storage)
-      }
-    }
-    """
-    
-    let expected = """
-    struct Foo {
-      var foo: Int {
-        _read {
-          yield storage.foo
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.foo
-        }
-      }
-      
-      init(foo: Int) {
-        self.storage = Storage(foo: foo)
-      }
-      
-      private var storage: Storage
-    
-      private class Storage {
-        var foo: Int
-        
-        @inline(__always)
-        init(foo: Int) {
-          self.foo = foo
-        }
-    
-        @inline(__always)
-        convenience init(_ storage: Storage) {
-          self.init(foo: storage.foo)
-        }
-      }
-      
-      @inline(__always)
-      private mutating func makeUniquelyReferencedStorage() {
-        guard !isKnownUniquelyReferenced(&storage) else {
-          return
-        }
-        storage = Storage(storage)
-      }
-    }
-    """
-    
-    await evaluate(source: source, expected: expected)
-  }
-  
-  func testWontRewriteStructWithUniqueStoredPropertyWhichHashAppliedCOWTechniquesWithArbitraryStorageClass() async {
-    let source = """
-    struct Foo {
-      var foo: Int {
-        _read {
-          yield bar.foo
-        }
-        _modify {
-          makeUnique()
-          yield &bar.foo
-        }
-      }
-      
-      init(foo: Int) {
-        self.bar = Bar(foo: foo)
-      }
-      
-      private var bar: Bar
-    
-      private class Bar {
-        var foo: Int
-        
-        @inline(__always)
-        init(foo: Int) {
-          self.foo = foo
-        }
-    
-        @inline(__always)
-        convenience init(_ bar: Bar) {
-          self.init(foo: bar.foo)
-        }
-      }
-      
-      @inline(__always)
-      private mutating func makeUnique() {
-        guard !isKnownUniquelyReferenced(&bar) else {
-          return
-        }
-        bar = Bar(bar)
-      }
-    }
-    """
-    
-    let expected = """
-    struct Foo {
-      var foo: Int {
-        _read {
-          yield bar.foo
-        }
-        _modify {
-          makeUnique()
-          yield &bar.foo
-        }
-      }
-      
-      init(foo: Int) {
-        self.bar = Bar(foo: foo)
-      }
-      
-      private var bar: Bar
-    
-      private class Bar {
-        var foo: Int
-        
-        @inline(__always)
-        init(foo: Int) {
-          self.foo = foo
-        }
-    
-        @inline(__always)
-        convenience init(_ bar: Bar) {
-          self.init(foo: bar.foo)
-        }
-      }
-      
-      @inline(__always)
-      private mutating func makeUnique() {
-        guard !isKnownUniquelyReferenced(&bar) else {
-          return
-        }
-        bar = Bar(bar)
-      }
-    }
     """
     
     await evaluate(source: source, expected: expected)

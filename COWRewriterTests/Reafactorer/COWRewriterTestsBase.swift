@@ -22,7 +22,7 @@ class COWRewriterTestsBase: XCTestCase {
       
       var treeID: UInt
       
-      var tree: Syntax
+      var tree: SourceFileSyntax
       
       let slc: SourceLocationConverter
       
@@ -32,7 +32,7 @@ class COWRewriterTestsBase: XCTestCase {
       init(tree: SourceFileSyntax) {
         self.file = nil
         self.treeID = UInt.random(in: .min...(.max))
-        self.tree = Syntax(tree)
+        self.tree = tree
         self.slc = SourceLocationConverter(file: "IN_MEMORY_SOURCE", tree: tree)
         self.refactorableDecls = []
       }
@@ -52,15 +52,19 @@ class COWRewriterTestsBase: XCTestCase {
       let requests = context.refactorableDecls.map {
         RefactorRequest(
           decl: $0,
-          storageClassName: "Storage",
-          storageVariableName: "storage",
-          storageUniquificationFunctionName: "makeUniqueStorageIfNeeded",
+          storageClassName: $0.namingSuggestions[.storageClassName] ?? "Storage",
+          storageVariableName: $0.namingSuggestions[.storageVariableName] ?? "storage",
+          storageUniquificationFunctionName: $0.namingSuggestions[.storageUniquificationFunctionName] ?? "makeUniqueStorageIfNeeded",
           typedefs: [:]
         )
       }
       let output = rewriter.execute(requests: requests)
       
-      let actual = output.description
+      let printer = Printer()
+      printer.configs.indentationMode = .space
+      printer.configs.indentWidth = 2
+      
+      let actual = printer.print(syntax: output, url: URL(fileURLWithPath: ""))
       
       XCTAssertStringsEqualWithDiff(actual, expected, file: file, line: line)
     } catch let error {

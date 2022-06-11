@@ -26,7 +26,7 @@ func makeStorageClass(
   if needsCreateMemberwiseInitializer {
     memberwiseInitializer = makeStorageClassMemberwiseInitializerDecl(
       resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
-    ).withLeadingTrivia(.newlines(2))
+    ).withLeadingTrivia(.carriageReturnLineFeeds(2))
   } else {
     memberwiseInitializer = nil
   }
@@ -34,7 +34,7 @@ func makeStorageClass(
   let copyInitializer = makeStorageClassCopyInitializer(
     storageClassName: className,
     storageNames: resolvedStorageNameAndTypes.keys
-  ).withLeadingTrivia(.newlines(2))
+  ).withLeadingTrivia(.carriageReturnLineFeeds(2))
   
   return ClassDeclSyntax { classDecl in
     classDecl.addModifier(
@@ -221,7 +221,8 @@ private func makeStorageClassCopyInitializer<StorageNames: Sequence>(
                       )
                     )
                   }
-                )
+                ).withLeadingTrivia(.carriageReturnLineFeeds(1))
+                  .withTrailingTrivia(.carriageReturnLineFeeds(1))
               )
             }
           )

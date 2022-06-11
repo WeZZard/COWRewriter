@@ -118,7 +118,7 @@ private func resolveStorageNameAndTypes(
   errors: inout [COWRewriterError]
 ) -> OrderedDictionary<String, TypeSyntax> {
   let storedVariables = structDecl.members.members.storedVariables
-  let storageNamesAndTypes = Dictionary(
+  let storageNamesAndTypes = OrderedDictionary(
     uniqueKeysWithValues: storedVariables.flatMap(\.allIdentifiersAndTypes)
   )
   

@@ -13,7 +13,7 @@ class COWRewriterRewriteTests: COWRewriterTestsBase {
     let source = """
     struct Foo {
       var foo: Int
-        
+      
       init(foo: Int) {
         self.foo = foo
       }
@@ -25,43 +25,36 @@ class COWRewriterRewriteTests: COWRewriterTestsBase {
     struct Foo {
       private class Storage {
         var foo: Int
-        
-        @inline(__always)
+    
         init(foo: Int) {
           self.foo = foo
         }
     
-        @inline(__always)
-        convenience init(_ storage: Storage) {
-          self.init(foo: storage.foo)
+        init(_ storage: Storage) {
+          self.foo = storage.foo
         }
       }
-            
+    
       private var storage: Storage
-      
+    
+      private mutating func makeUniqueStorageIfNeeded() {
+        guard !isKnownUniquelyReferenced(&storage) else { return }
+        self.storage = Storage(storage)
+      }
+    
+      var foo: Int {
+        _read { yield self.storage.foo }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.foo
+        }
+      }
+    
       init(foo: Int) {
         self.storage = Storage(foo: foo)
       }
-      
-      var foo: Int {
-        _read {
-          yield storage.foo
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.foo
-        }
-      }
-      
-      @inline(__always)
-      private mutating func makeUniquelyReferencedStorage() {
-        guard !isKnownUniquelyReferenced(&storage) else {
-          return
-        }
-        storage = Storage(storage)
-      }
-      
     }
+    
     """
     
     await evaluate(source: source, expected: expected)
@@ -86,71 +79,62 @@ class COWRewriterRewriteTests: COWRewriterTestsBase {
     
     let expected = """
     struct Foo {
-      var fee: Int {
-        _read {
-          yield storage.fee
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.fee
-        }
-      }
-      
-      var foe: Int {
-        _read {
-          yield storage.foe
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.foe
-        }
-      }
-      
-      var fum: Int {
-        _read {
-          yield storage.fum
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.fum
-        }
-      }
-      
-      private var storage: Storage
-      
-      init(fee: Int, foe: Int, fum: Int) {
-        self.storage = Storage(fee: fee, foe: foe, fum: fum)
-      }
-      
       private class Storage {
         var fee: Int
-        
+    
         var foe: Int
-        
+    
         var fum: Int
-        
-        @inline(__always)
+    
         init(fee: Int, foe: Int, fum: Int) {
           self.fee = fee
           self.foe = foe
           self.fum = fum
         }
-        
-        @inline(__always)
-        convenience init(_ storage: Storage) {
-          self.init(fee: storage.fee, foe: storage.foe, fum: storage.fum)
+    
+        init(_ storage: Storage) {
+          self.fee = storage.fee
+          self.foe = storage.foe
+          self.fum = storage.fum
         }
       }
-      
-      @inline(__always)
-      private mutating func makeUniquelyReferencedStorage() {
-        guard !isKnownUniquelyReferenced(&storage) else {
-          return
-        }
-        storage = Storage(storage)
+    
+      private var storage: Storage
+    
+      private mutating func makeUniqueStorageIfNeeded() {
+        guard !isKnownUniquelyReferenced(&storage) else { return }
+        self.storage = Storage(storage)
       }
-      
+    
+      var fee: Int {
+        _read { yield self.storage.fee }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.fee
+        }
+      }
+    
+      var foe: Int {
+        _read { yield self.storage.foe }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.foe
+        }
+      }
+    
+      var fum: Int {
+        _read { yield self.storage.fum }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.fum
+        }
+      }
+    
+      init(fee: Int, foe: Int, fum: Int) {
+        self.storage = Storage(fee: fee, foe: foe, fum: fum)
+      }
     }
+    
     """
     
     await evaluate(source: source, expected: expected)
@@ -177,73 +161,64 @@ class COWRewriterRewriteTests: COWRewriterTestsBase {
     
     let expected = """
     struct Foo {
-      var fee: Int {
-        _read {
-          yield storage.fee
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.fee
-        }
-      }
-      
-      var foe: Int {
-        _read {
-          yield storage.foe
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.foe
-        }
-      }
-      
-      var fum: Int {
-        _read {
-          yield storage.fum
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.fum
-        }
-      }
-      
-      var bar: Int { 0 }
-      
-      private var storage: Storage
-      
-      init(fee: Int, foe: Int, fum: Int) {
-        self.storage = Storage(fee: fee, foe: foe, fum: fum)
-      }
-      
       private class Storage {
         var fee: Int
-        
+    
         var foe: Int
-        
+    
         var fum: Int
-        
-        @inline(__always)
+    
         init(fee: Int, foe: Int, fum: Int) {
           self.fee = fee
           self.foe = foe
           self.fum = fum
         }
-        
-        @inline(__always)
-        convenience init(_ storage: Storage) {
-          self.init(fee: storage.fee, foe: storage.foe, fum: storage.fum)
+    
+        init(_ storage: Storage) {
+          self.fee = storage.fee
+          self.foe = storage.foe
+          self.fum = storage.fum
         }
       }
-      
-      @inline(__always)
-      private mutating func makeUniquelyReferencedStorage() {
-        guard !isKnownUniquelyReferenced(&storage) else {
-          return
-        }
-        storage = Storage(storage)
+    
+      private var storage: Storage
+    
+      private mutating func makeUniqueStorageIfNeeded() {
+        guard !isKnownUniquelyReferenced(&storage) else { return }
+        self.storage = Storage(storage)
       }
-      
+    
+      var fee: Int {
+        _read { yield self.storage.fee }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.fee
+        }
+      }
+    
+      var foe: Int {
+        _read { yield self.storage.foe }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.foe
+        }
+      }
+    
+      var fum: Int {
+        _read { yield self.storage.fum }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.fum
+        }
+      }
+    
+      init(fee: Int, foe: Int, fum: Int) {
+        self.storage = Storage(fee: fee, foe: foe, fum: fum)
+      }
+    
+      var bar: Int { 0 }
     }
+    
     """
     
     await evaluate(source: source, expected: expected)
@@ -271,74 +246,65 @@ class COWRewriterRewriteTests: COWRewriterTestsBase {
     
     let expected = """
     struct Foo {
-      var fee: Int {
-        _read {
-          yield storage.fee
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.fee
-        }
-      }
-      
-      var foe: Int {
-        _read {
-          yield storage.foe
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.foe
-        }
-      }
-      
-      var fum: Int {
-        _read {
-          yield storage.fum
-        }
-        _modify {
-          makeUniquelyReferencedStorage()
-          yield &storage.fum
-        }
-      }
-      
-      private var storage: Storage2
-          
-      class Storage {
-      }
-            
-      init(fee: Int, foe: Int, fum: Int) {
-        self.storage = Storage2(fee: fee, foe: foe, fum: fum)
-      }
-      
       private class Storage2 {
         var fee: Int
-        
+    
         var foe: Int
-        
+    
         var fum: Int
-        
-        @inline(__always)
+    
         init(fee: Int, foe: Int, fum: Int) {
           self.fee = fee
           self.foe = foe
           self.fum = fum
         }
-        
-        @inline(__always)
-        convenience init(_ storage: Storage2) {
-          self.init(fee: storage.fee, foe: storage.foe, fum: storage.fum)
+    
+        init(_ storage: Storage2) {
+          self.fee = storage.fee
+          self.foe = storage.foe
+          self.fum = storage.fum
         }
       }
-      
-      @inline(__always)
-      private mutating func makeUniquelyReferencedStorage() {
-        guard !isKnownUniquelyReferenced(&storage) else {
-          return
-        }
-        storage = Storage2(storage)
+    
+      private var storage: Storage2
+    
+      private mutating func makeUniqueStorageIfNeeded() {
+        guard !isKnownUniquelyReferenced(&storage) else { return }
+        self.storage = Storage2(storage)
       }
-      
+    
+      var fee: Int {
+        _read { yield self.storage.fee }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.fee
+        }
+      }
+    
+      var foe: Int {
+        _read { yield self.storage.foe }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.foe
+        }
+      }
+    
+      var fum: Int {
+        _read { yield self.storage.fum }
+        _modify {
+          self.makeUniqueStorageIfNeeded()
+          yield &self.storage.fum
+        }
+      }
+    
+      init(fee: Int, foe: Int, fum: Int) {
+        self.storage = Storage2(fee: fee, foe: foe, fum: fum)
+      }
+    
+      class Storage {
+      }
     }
+    
     """
     
     await evaluate(source: source, expected: expected)

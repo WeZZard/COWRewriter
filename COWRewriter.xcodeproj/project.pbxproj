@@ -24,10 +24,7 @@
 		9C080A122839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A112839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift */; };
 		9C080A142839F0D400ACDCE9 /* COWRewritertRewriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C080A132839F0D400ACDCE9 /* COWRewritertRewriteTests.swift */; };
 		9C2C13DB283E743D00978CD9 /* Refactorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2C13DA283E743D00978CD9 /* Refactorer.swift */; };
-		9C46396B2845D8820020FCEF /* ScopeBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C46396A2845D8820020FCEF /* ScopeBuilderTests.swift */; };
 		9C46396D284685DF0020FCEF /* RuntimeErrorHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C46396C284685DF0020FCEF /* RuntimeErrorHandling.swift */; };
-		9C4639732849A9920020FCEF /* ScopeNameLookUpTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4639722849A9920020FCEF /* ScopeNameLookUpTests.swift */; };
-		9C4639752849C5890020FCEF /* ScopeTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4639742849C5890020FCEF /* ScopeTestsBase.swift */; };
 		9C768F9D284B2EC300FE835D /* Printer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768F9C284B2EC300FE835D /* Printer.swift */; };
 		9C768F9F284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */; };
 		9C768FA1284B838A00FE835D /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C768FA0284B838A00FE835D /* SessionManager.swift */; };
@@ -90,10 +87,7 @@
 		9C080A112839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewriterWontRewriteTests.swift; sourceTree = "<group>"; };
 		9C080A132839F0D400ACDCE9 /* COWRewritertRewriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = COWRewritertRewriteTests.swift; sourceTree = "<group>"; };
 		9C2C13DA283E743D00978CD9 /* Refactorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Refactorer.swift; sourceTree = "<group>"; };
-		9C46396A2845D8820020FCEF /* ScopeBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeBuilderTests.swift; sourceTree = "<group>"; };
 		9C46396C284685DF0020FCEF /* RuntimeErrorHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeErrorHandling.swift; sourceTree = "<group>"; };
-		9C4639722849A9920020FCEF /* ScopeNameLookUpTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeNameLookUpTests.swift; sourceTree = "<group>"; };
-		9C4639742849C5890020FCEF /* ScopeTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScopeTestsBase.swift; sourceTree = "<group>"; };
 		9C768F9C284B2EC300FE835D /* Printer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Printer.swift; sourceTree = "<group>"; };
 		9C768F9E284B47C000FE835D /* Stdlib+COWRewriterAdditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Stdlib+COWRewriterAdditions.swift"; sourceTree = "<group>"; };
 		9C768FA0284B838A00FE835D /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
@@ -254,9 +248,6 @@
 				9CDEE1ED283F4147005C3A4F /* SemaTestsBase.swift */,
 				9CDEE1EF283FACB9005C3A4F /* SemaTypeInferTests.swift */,
 				9CDEE1F1283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift */,
-				9C4639742849C5890020FCEF /* ScopeTestsBase.swift */,
-				9C46396A2845D8820020FCEF /* ScopeBuilderTests.swift */,
-				9C4639722849A9920020FCEF /* ScopeNameLookUpTests.swift */,
 			);
 			path = Sema;
 			sourceTree = "<group>";
@@ -469,12 +460,9 @@
 				9CDEE1F0283FACB9005C3A4F /* SemaTypeInferTests.swift in Sources */,
 				9C080A102839EF7500ACDCE9 /* XCTestCase+COWRewriterTestsAdditions.swift in Sources */,
 				9CDEE1F2283FACDE005C3A4F /* SemaRefactorableDeclRecognitionTests.swift in Sources */,
-				9C4639752849C5890020FCEF /* ScopeTestsBase.swift in Sources */,
 				9C080A0E283965E500ACDCE9 /* COWRewriterTestsBase.swift in Sources */,
 				9C080A122839F0CE00ACDCE9 /* COWRewriterWontRewriteTests.swift in Sources */,
 				9C080A142839F0D400ACDCE9 /* COWRewritertRewriteTests.swift in Sources */,
-				9C4639732849A9920020FCEF /* ScopeNameLookUpTests.swift in Sources */,
-				9C46396B2845D8820020FCEF /* ScopeBuilderTests.swift in Sources */,
 				9CDEE1EE283F4147005C3A4F /* SemaTestsBase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

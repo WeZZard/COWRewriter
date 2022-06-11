@@ -60,7 +60,7 @@ func makeCowStruct(
                     )
                   }
                 )
-              }.withLeadingTrivia(.newlines(2))
+              }.withLeadingTrivia(.carriageReturnLineFeeds(2))
             )
           )
         }
@@ -74,7 +74,7 @@ func makeCowStruct(
                 functionName: storageUniquificationFunctionName,
                 storageClassName: storageClass.identifier.text,
                 storageVariableName: storageVariableName
-              ).withLeadingTrivia(.newlines(2))
+              ).withLeadingTrivia(.carriageReturnLineFeeds(2))
             )
           )
         }
@@ -100,7 +100,7 @@ func makeCowStruct(
               item.useDecl(
                 DeclSyntax(
                   dispatchedVariableDecl
-                    .withLeadingTrivia(.newlines(2))
+                    .withLeadingTrivia(.carriageReturnLineFeeds(2))
                 )
               )
             }
@@ -116,7 +116,7 @@ func makeCowStruct(
                   storageClassName: storageClass.identifier.text,
                   storageVariableName: storageVariableName,
                   resolvedStorageNameAndTypes: resolvedStorageNameAndTypes
-                ).withLeadingTrivia(.newlines(2))
+                ).withLeadingTrivia(.carriageReturnLineFeeds(1))
               )
             )
           }
@@ -362,18 +362,6 @@ private func makeStorageUniquificationFunctionDecl(
           ParameterClauseSyntax { parameterClause in
             parameterClause.useLeftParen(.leftParen)
             parameterClause.useRightParen(.rightParen)
-          }
-        )
-        functionSignature.useOutput(
-          ReturnClauseSyntax { returnCaluse in
-            returnCaluse.useArrow(.arrow)
-            returnCaluse.useReturnType(
-              TypeSyntax(
-                SimpleTypeIdentifierSyntax { simpleTypeId in
-                  simpleTypeId.useName(.identifier("Void"))
-                }
-              )
-            )
           }
         )
       }
@@ -693,7 +681,8 @@ private func makeStructDispatchedInitializerDecl(
                     }
                   )
                 )
-              }
+              }.withLeadingTrivia(.carriageReturnLineFeeds(1))
+                .withTrailingTrivia(.carriageReturnLineFeeds(1))
             )
           )
         }
