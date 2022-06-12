@@ -16,24 +16,25 @@ struct FileDropView: View {
   private var importErrorMessage: String?
   
   var body: some View {
-    VStack {
-      Spacer()
-      VStack(spacing: 8) {
-        HStack {
-          Button("Open", action: onTapOpen)
-            .fixedSize()
-          Text("or drop a Swift source file.")
-            .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: true)
-        }
-        ImportErrorMessageView(
-          importErrorMessage: $importErrorMessage,
-          fadeEdge: .bottom
-        )
+    VStack(spacing: 8) {
+      HStack {
+        Button("Open", action: onTapOpen)
+          .fixedSize()
+        Text("or drop a Swift source file.")
+          .lineLimit(1)
+          .fixedSize(horizontal: true, vertical: true)
       }
-      .padding(32)
-      Spacer()
+      ImportErrorMessageView(
+        importErrorMessage: $importErrorMessage,
+        fadeEdge: .bottom
+      )
     }
+    .frame(
+      minWidth: 300,
+      maxWidth: .infinity,
+      minHeight: 150,
+      maxHeight: .infinity
+    )
     .onDrop(
       of: [.fileURL],
       isTargeted: nil,

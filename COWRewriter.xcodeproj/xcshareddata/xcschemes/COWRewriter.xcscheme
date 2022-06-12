@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9C0809C42838BA2F00ACDCE9"
-               BuildableName = "COWRewriter.app"
+               BuildableName = "Swift COW Refactorer.app"
                BlueprintName = "COWRewriter"
                ReferencedContainer = "container:COWRewriter.xcodeproj">
             </BuildableReference>
@@ -65,7 +65,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9C0809C42838BA2F00ACDCE9"
-            BuildableName = "COWRewriter.app"
+            BuildableName = "Swift COW Refactorer.app"
             BlueprintName = "COWRewriter"
             ReferencedContainer = "container:COWRewriter.xcodeproj">
          </BuildableReference>
@@ -82,7 +82,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9C0809C42838BA2F00ACDCE9"
-            BuildableName = "COWRewriter.app"
+            BuildableName = "Swift COW Refactorer.app"
             BlueprintName = "COWRewriter"
             ReferencedContainer = "container:COWRewriter.xcodeproj">
          </BuildableReference>
