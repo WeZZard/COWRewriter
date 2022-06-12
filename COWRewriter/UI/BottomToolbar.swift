@@ -21,12 +21,10 @@ protocol BottomToolbarActions: AnyObject {
 
 struct BottomToolbar: View {
   
-  actor Flags: ObservableObject {
+  private struct Flags {
     
-    @MainActor
     var isSaving: Bool = false
     
-    @MainActor
     var isCopying: Bool = false
     
   }
@@ -39,7 +37,7 @@ struct BottomToolbar: View {
   @Binding
   var refactorRequests: [RefactorRequest]
   
-  @StateObject
+  @State
   private var flags: Flags = Flags()
   
   var body: some View {
@@ -50,9 +48,9 @@ struct BottomToolbar: View {
         .disabled(!hasSelectedAll || candidates.isEmpty)
       Spacer()
       Button("Copy ...", action: copy)
-        .disabled(refactorRequests.isEmpty && !flags.isCopying)
+        .disabled(refactorRequests.isEmpty)
       Button("Save As ...", action: saveAs)
-        .disabled(refactorRequests.isEmpty && !flags.isSaving)
+        .disabled(refactorRequests.isEmpty)
     }
   }
   
@@ -74,7 +72,7 @@ struct BottomToolbar: View {
     }
     flags.isCopying = true
     
-    Task {
+    Task.detached {
       await actions.copy()
       flags.isCopying = false
     }
@@ -96,7 +94,7 @@ struct BottomToolbar: View {
     }
     
     flags.isSaving = true
-    Task {
+    Task.detached {
       try await actions.saveAs(url: url)
       flags.isSaving = false
     }
